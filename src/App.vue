@@ -1,142 +1,6 @@
 <template>
-  <section id="case_data" class="mt-5" role="tablist">
-    <b-card no-body class="mb-3">
-      <b-card-header header-tag="header" class="p-1" role="tab">
-        <b-button block v-b-toggle.countries variant="success">Countries</b-button>
-      </b-card-header>
-      <b-collapse id="countries" visible accordion="my-accordion" role="tabpanel">
-        <b-card-body>
-          <b-form>
-            <b-row>
-              <b-col class="mb-3" cols="12" sm="6">
-                <b-form-select v-model="countryOfOrigin" :options="countries.origin"></b-form-select>
-              </b-col>
-              <b-col class="mb-3" cols="12" sm="6">
-                <b-form-select v-model="countryOfDestination" :options="countries.destination"></b-form-select>
-              </b-col>
-            </b-row>
-            <b-button type="submit" variant="success mt-3">Save</b-button>
-          </b-form>
-        </b-card-body>
-      </b-collapse>
-    </b-card>
-    <b-card no-body class="mb-3">
-      <b-card-header header-tag="header" class="p-1" role="tab">
-        <b-button block v-b-toggle.recruitment variant="success">Recruitment</b-button>
-      </b-card-header>
-      <b-collapse id="recruitment" accordion="my-accordion" role="tabpanel">
-        <b-card-body>
-          <b-form>
-            <b-row>
-              <b-col class="mb-3" cols="12" sm="4" md="3">
-                <b-form-input v-model="title" placeholder="Title"></b-form-input>
-              </b-col>
-              <b-col class="mb-3" cols="12" sm="8" md="9">
-                <b-form-input v-model="name.family" placeholder="Family name"></b-form-input>
-              </b-col>
-              <b-col class="mb-3" cols="12" sm="6">
-                <b-form-input v-model="name.middle" placeholder="Middle name"></b-form-input>
-              </b-col>
-              <b-col class="mb-3" cols="12" sm="6">
-                <b-form-input v-model="name.given" placeholder="Given name"></b-form-input>
-              </b-col>
-            </b-row>
-            <b-row>
-              <b-col class="mb-3" cols="12" sm="4">
-                <b-form-datepicker v-model="birth.date" placeholder="Date of birth" locale="en"></b-form-datepicker>
-              </b-col>
-              <b-col class="mb-3" cols="12" sm="8">
-                <b-form-input v-model="birth.place" placeholder="Place of birth"></b-form-input>
-              </b-col>
-            </b-row>
-            <b-row>
-              <b-col class="mb-3" cols="12">
-                <b-form-input v-model="address.ph" placeholder="Address PH"></b-form-input>
-              </b-col>
-              <b-col class="mb-3" cols="12" sm="6">
-                <b-form-input type="email" v-model="email" placeholder="Email"></b-form-input>
-              </b-col>
-              <b-col class="mb-3" cols="12" sm="6">
-                <b-form-input v-model="facebook" placeholder="Facebook"></b-form-input>
-              </b-col>
-              <b-col class="mb-3" cols="12" sm="6">
-                <b-form-input type="tel" v-model="number.phone" placeholder="Phone number"></b-form-input>
-              </b-col>
-              <b-col class="mb-3" cols="12" sm="6">
-                <b-form-input v-model="civilStatus" placeholder="Civil status"></b-form-input>
-              </b-col>
-            </b-row>
-            <b-row>
-              <b-col cols="12" sm="6">
-                <b-row no-gutters>
-                  <b-col class="mb-3" cols="6">
-                    <span>Contract C&C</span>
-                  </b-col>
-                  <b-col class="mb-3" cols="6">
-                    <b-form-radio-group
-                      v-model="selectedContract"
-                      :options="contractOptions"
-                      name="contract"
-                    ></b-form-radio-group>
-                  </b-col>
-                </b-row>
-              </b-col>
-              <b-col cols="12" sm="6">
-                <b-row no-gutters>
-                  <b-col class="mb-3" cols="6">
-                    <span>Confirmation DSGVO</span>
-                  </b-col>
-                  <b-col class="mb-3" cols="6">
-                    <b-form-radio-group
-                      v-model="selectedConfirmation"
-                      :options="confirmationOptions"
-                      name="confirmation"
-                    ></b-form-radio-group>
-                  </b-col>
-                </b-row>
-              </b-col>
-            </b-row>
-            <b-row>
-              <b-col class="mb-3" cols="12" sm="4" md="3">
-                <b-form-input v-model="address.current" placeholder="Current address"></b-form-input>
-              </b-col>
-              <b-col class="mb-3" cols="12" sm="8" md="9">
-                <b-form-input v-model="number.landline" placeholder="Landline number"></b-form-input>
-              </b-col>
-              <b-col class="mb-3" cols="12" sm="6">
-                <b-form-input v-model="number.mobile" placeholder="Mobile number"></b-form-input>
-              </b-col>
-              <b-col class="mb-3" cols="12" sm="6">
-                <b-form-input v-model="skype" placeholder="Skype name"></b-form-input>
-              </b-col>
-            </b-row>
-            <b-row>
-              <b-col cols="12" sm="6">
-                <p class="mb-2">POEA E-Registration</p>
-                <b-form-file
-                  v-model="POEARegistration"
-                  placeholder="Choose a file or drop it here..."
-                  drop-placeholder="Drop file here..."
-                  accept=".pdf"
-                ></b-form-file>
-              </b-col>
-              <b-col cols="12" sm="6">
-                <p class="mb-2">POEA PEOS Number</p>
-                <b-form-file
-                  v-model="POEAPEOSNumber"
-                  placeholder="Choose a file or drop it here..."
-                  drop-placeholder="Drop file here..."
-                  accept=".pdf"
-                ></b-form-file>
-              </b-col>
-            </b-row>
-            <b-button type="submit" variant="success mt-4">Save</b-button>
-          </b-form>
-        </b-card-body>
-      </b-collapse>
-    </b-card>
-
-    <b-card no-body class="mb-3">
+  <div id="case_data" class="mt-5" role="tablist">
+    <!-- <b-card no-body class="mb-3">
       <b-card-header header-tag="header" class="p-1" role="tab">
         <b-button block v-b-toggle.language_training variant="success">Language Training A1-B1</b-button>
       </b-card-header>
@@ -171,15 +35,167 @@
       </b-collapse>
     </b-card>
     <b-card>
-      <b-card-body>ksdjhfkjh</b-card-body>
+      <b-card-body>{{fields}}</b-card-body>
+    </b-card> -->
+
+    <b-card v-for="(section, index) in fieldsConfig" :key="section.name" :tag="section.type" no-body class="mb-3">
+      <b-card-header header-tag="header" class="p-1" role="tab">
+        <b-button block v-b-toggle="section.name" variant="success">{{ section.title }}</b-button>
+      </b-card-header>
+      <b-collapse :id="section.name" accordion="my-accordion" :visible="index === 0" role="tabpanel">
+        <b-card-body>
+          <b-form>
+            <b-row>
+              <b-col
+                v-for="field in section.children"
+                :key="field.name"
+                class="mb-3"
+                cols="12"
+                :sm="field.name === 'title' || field.name === 'birth_date' ? '4' :
+                  field.name === 'fname' || field.name === 'birth_place' ? '8' :
+                  field.name === 'address' ? '12' :
+                  '6'"
+              >
+                <template v-if="field.type === 'date'">
+                  <b-form-datepicker v-model="fieldsModels[field.name]" :placeholder="field.title" locale="en"></b-form-datepicker>
+                </template>
+                <template v-else-if="field.type === 'yes_no'">
+                  <b-row no-gutters>
+                    <b-col class="mb-3" cols="6">
+                      <span>{{ field.title }}</span>
+                    </b-col>
+                    <b-col class="mb-3" cols="6">
+                      <b-form-radio-group
+                        v-model="fieldsModels[field.name]"
+                        :options="field.type === 'contract_cc' ? contractOptions : confirmationOptions"
+                      ></b-form-radio-group>
+                    </b-col>
+                  </b-row>
+                </template>
+                <template v-else-if="field.type === 'file'">
+                  <p class="mb-2">{{ field.title }}</p>
+                  <b-form-file
+                    v-model="fieldsModels[field.name]"
+                    placeholder="Choose a file or drop it here..."
+                    drop-placeholder="Drop file here..."
+                    accept=".pdf"
+                  ></b-form-file>
+                </template>
+                <template v-else>
+                  <b-form-input :type="field.type" v-model="fieldsModels[field.name]" :placeholder="field.title" />
+                </template>
+                <b>{{fieldsModels[field.name]}}</b>
+              </b-col>
+            </b-row>
+            <b-button type="submit" variant="success mt-4">Save</b-button>
+          </b-form>
+        </b-card-body>
+      </b-collapse>
     </b-card>
-  </section>
+  </div>
 </template>
 
 <script>
 export default {
   name: "App",
   data: () => ({
+    fieldsConfig: {},
+    fieldsData: {
+      recruitment: {}
+    },
+    fieldsModels: {
+      "title": "",
+      "fname": "",
+      "mname": "",
+      "gname": "",
+      "birth_date": null,
+      "birth_place": "",
+      "address": "",
+      "address_ph": "",
+      "email": "",
+      "facebook": "",
+      "phone": null,
+      "ll_number": "",
+      "mobile": "",
+      "skype": "",
+      "civil_status": "",
+      "contract_cc": false,
+      "confirmation_dsgvo": false,
+      "poea_ereg": null,
+      "poea_num": null,
+      "batch": null,
+      "exam_date": null,
+      "start_date": null,
+      "proj_date": null,
+      "recog_app_form": false,
+      "poa_cc": false,
+      "lang_cert": null,
+      "curr_vitae": false,
+      "passport": false,
+      "marr_contract": false,
+      "birth_cert": null,
+      "birth_cert_child": null,
+      "school_dipl": null,
+      "bsn_dipl": null,
+      "transcript": null,
+      "related_exp": null,
+      "curriculum": null,
+      "empl_cert": null,
+      "prc_lic": null,
+      "prc_cert": null,
+      "prc_rating": null,
+      "defict_lett": false,
+      "defict_hours": null,
+      "defict_theory": "",
+      "defict_hosp": "",
+      "emploer_name": "",
+      "employer_addr": "",
+      "employer_cont_assist": false,
+      "work_hour_assist": null,
+      "job_offer": false,
+      "work_hour_nurse": null,
+      "cc_confirm": false,
+      "visa": false,
+      "visa_exp": null,
+      "visa_appform": false,
+      "employer_cont_name": "",
+      "employer_cont_email": "",
+      "employer_cont_phone": "",
+      "travel_insurance": false,
+      "medi_cert": false,
+      "medi_cert_exp": null,
+      "nbi_clear": false,
+      "nbi_exp": null,
+      "oec_num": "",
+      "oec_num_exp": null,
+      "e_ticket": false,
+      "arriv_date": null,
+      "melde_addr": "",
+      "melde_stat": false,
+      "bank_acc_id": false,
+      "steuer_id": false,
+      "renten_vn": "",
+      "kv_mitglie": false,
+      "quit_vors": false,
+      "aufenthalt": false,
+      "zusatzblatt": false,
+      "ablauf": null,
+      "measure_ztb": null,
+      "measure_zte": null,
+      "measure_ot": "",
+      "measure_zpb": null,
+      "measure_zpe": null,
+      "measure_op": "",
+      "termin_absch": null,
+      "bildungs": false,
+      "weiterbild": false,
+      "anlage9": false,
+      "arztliche": false,
+      "arbeit_measure": "",
+      "arberit_addr_measure": "",
+      "berufsurkunde": false,
+      "cc_vert_anerk": null
+    },
     // Countries data
     countries: {
       // Alpha-3 ISO standard is used for values
@@ -198,29 +214,30 @@ export default {
     countryOfDestination: null,
 
     // Recruitment data
-    title: "",
-    name: {
-      family: "",
-      middle: "",
-      given: ""
-    },
-    birth: {
-      date: null,
-      place: ""
-    },
-    address: {
-      ph: "",
-      current: ""
-    },
-    number: {
-      phone: "",
-      landline: "",
-      mobile: ""
-    },
-    email: "",
-    facebook: "",
-    skype: "",
-    civilStatus: "",
+
+    // title: "",
+    // name: {
+    //   family: "",
+    //   middle: "",
+    //   given: ""
+    // },
+    // birth: {
+    //   date: null,
+    //   place: ""
+    // },
+    // address: {
+    //   ph: "",
+    //   current: ""
+    // },
+    // number: {
+    //   phone: "",
+    //   landline: "",
+    //   mobile: ""
+    // },
+    // email: "",
+    // facebook: "",
+    // skype: "",
+    // civilStatus: "",
     contractOptions: [
       { text: "Yes", value: true },
       { text: "No", value: false }
@@ -229,30 +246,45 @@ export default {
       { text: "Yes", value: true },
       { text: "No", value: false }
     ],
-    selectedContract: false,
-    selectedConfirmation: false,
-    POEARegistration: null,
-    POEAPEOSNumber: null,
+    // selectedContract: false,
+    // selectedConfirmation: false,
+    // POEARegistration: null,
+    // POEAPEOSNumber: null,
 
     // Language Training
-    batch: null,
-    date: {
-      exam: null,
-      start: null,
-      projected: null
-    }
+    // batch: null,
+    // date: {
+    //   exam: null,
+    //   start: null,
+    //   projected: null
+    // }
   }),
   methods: {
     getFields(url) {
-      fetch(url, {
-        headers: { Authorization: "Basic " + window.btoa("test:pkotest9000") }
-      }).then(data => {
-        console.log(data);
-      });
+      this.$axios({
+        url: url,
+        method: "GET",
+        headers: {
+          Authorization: "Basic " + window.btoa("test:pkotest9000"),
+          "Content-Type": "application/json"
+        }
+      }).then(res => {
+        this.fieldsConfig = res.data.fields;
+        // this.fieldsConfig.forEach(field => {
+        //   const content = field.children
+        //   for (let item of content) {
+        //     this.fieldsModels[item.name] = item.type === 'date' || item.type === 'number' || item.type === 'file' ? null : item.type === 'yes_no' ? false : ''
+        //   }
+        // })
+      })
+    },
+    input (item, value) {
+      item = value
+      console.log(item)
     }
   },
   created() {
-    this.getFields("/casedata?a=init&sid=wconen");
+    this.getFields("http://localhost:8080/casedata?a=init&sid=wconen")
   }
 };
 </script>
