@@ -1,5 +1,5 @@
 <template>
-  <div id="case_data" class="mt-5" role="tablist">
+  <div id="case_data" role="tablist">
     <b-form @submit.prevent="send()">
       <b-card
         v-for="(section, index) in fieldsConfig"
@@ -267,17 +267,10 @@ export default {
 </script>
 
 <style>
-body {
-  background-color: #212121;
-}
 #case_data {
   background-color: #fff;
   margin: 0 auto;
   padding: 15px;
-  /* width: 1010px; */
-  max-width: 1010px;
-  /* height: 802px;
-  max-height: 802px; */
   font-family: Arial, Helvetica, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
