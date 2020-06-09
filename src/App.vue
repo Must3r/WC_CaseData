@@ -57,7 +57,7 @@
                     placeholder="Choose a file or drop it here..."
                     drop-placeholder="Drop file here..."
                     accept=".pdf"
-                    @change="showFiles(field.name)"
+                    @change="handleFiles(field.name)"
                   ></b-form-file>
                 </template>
                 <template v-else>
@@ -67,6 +67,7 @@
                     :placeholder="field.title"
                   />
                 </template>
+                {{fieldsModels[field.name]}}
               </b-col>
             </b-row>
           </b-card-body>
@@ -229,29 +230,21 @@ export default {
       }).then(res => console.log(res.data));
     },
     send() {
+      const bodyFormData = new FormData();
+      bodyFormData.set("data", JSON.stringify(this.fieldsModels));
       this.$axios({
-        url: "/casedata?a=save&sid=wconen&applicant_id=13131",
+        url: `/casedata?a=save&sid=wconen&applicant_id=1313`,
         method: "POST",
         headers: {
           Authorization: "Basic " + window.btoa("test:pkotest9000"),
           "Content-Type": "application/json"
         },
-        data: this.fieldsModels
+        data: bodyFormData
       })
         .then(res => console.log(res))
         .catch(err => console.log(err));
-      // var xhr = new XMLHttpRequest();
-      // xhr.open('POST', '/casedata?a=save&sid=wconen&applicant_id=13131', true);
-      // xhr.setRequestHeader('Authorization', "Basic " + window.btoa("test:pkotest9000"));
-      // xhr.setRequestHeader('Content-Type', 'application/json');
-      // xhr.send(JSON.stringify(this.fieldsModels));
-      // if (xhr.status != 200) {
-      //   console.log('Ошибка ' + xhr.status + ': ' + xhr.statusText);
-      // } else {
-      //   console.log(xhr.responseText);
-      // }
     },
-    showFiles(name) {
+    handleFiles(name) {
       const element = document.querySelector(`#${name}`);
       const file = element.files[0];
       console.log(element);
@@ -268,9 +261,7 @@ export default {
   },
   created() {
     this.getFields("/casedata?a=init&sid=wconen");
-    this.get(
-      "/casedata?a=get&sid=wconen&applicant_id=1313"
-    );
+    this.get("/casedata?a=get&sid=wconen&applicant_id=1313");
   }
 };
 </script>
