@@ -83,9 +83,6 @@ export default {
   name: "App",
   data: () => ({
     fieldsConfig: {},
-    fieldsData: {
-      recruitment: {}
-    },
     fieldsModels: {
       title: "",
       fname: "",
@@ -179,24 +176,6 @@ export default {
       berufsurkunde: false,
       cc_vert_anerk: null
     },
-    pdf: [],
-    // Countries data
-    countries: {
-      // Alpha-3 ISO standard is used for values
-      origin: [
-        { value: null, text: "Select country of origin" },
-        { value: "PHL", text: "Philippines" },
-        { value: "DEU", text: "Germany" }
-      ],
-      destination: [
-        { value: null, text: "Select country of destination" },
-        { value: "DEU", text: "Germany" },
-        { value: "PHL", text: "Philippines" }
-      ]
-    },
-    countryOfOrigin: null,
-    countryOfDestination: null,
-
     contractOptions: [
       { text: "Yes", value: true },
       { text: "No", value: false }
@@ -219,16 +198,16 @@ export default {
         this.fieldsConfig = res.data.fields;
       });
     },
-    get(url) {
-      this.$axios({
-        url: url,
-        method: "GET",
-        headers: {
-          Authorization: "Basic " + window.btoa("test:pkotest9000"),
-          "Content-Type": "application/json"
-        }
-      }).then(res => console.log(res.data));
-    },
+    // get(url) {
+    //   this.$axios({
+    //     url: url,
+    //     method: "GET",
+    //     headers: {
+    //       Authorization: "Basic " + window.btoa("test:pkotest9000"),
+    //       "Content-Type": "application/json"
+    //     }
+    //   }).then(res => console.log(res.data));
+    // },
     send() {
       const bodyFormData = new FormData();
       bodyFormData.set("data", JSON.stringify(this.fieldsModels));
@@ -261,7 +240,7 @@ export default {
   },
   created() {
     this.getFields("/casedata?a=init&sid=wconen");
-    this.get("/casedata?a=get&sid=wconen&applicant_id=1313");
+    // this.get("/casedata?a=get&sid=wconen&applicant_id=1313");
   }
 };
 </script>
