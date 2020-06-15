@@ -9,7 +9,7 @@
         class="mb-3"
       >
         <b-card-header header-tag="header" class="p-1" role="tab">
-          <b-button block v-b-toggle="section.name" variant="success">{{ section.title }}</b-button>
+          <b-button block v-b-toggle="section.name" variant="secondary">{{ section.title }}</b-button>
         </b-card-header>
         <b-collapse
           :id="section.name"
@@ -45,7 +45,7 @@
                       <b-form-radio-group
                         :id="field.name"
                         v-model="fieldsModels[field.name]"
-                        :options="field.type === 'contract_cc' ? contractOptions : confirmationOptions"
+                        :options="options"
                       ></b-form-radio-group>
                     </b-col>
                   </b-row>
@@ -67,14 +67,16 @@
                     :placeholder="field.title"
                   />
                 </template>
-                {{fieldsModels[field.name]}}
               </b-col>
             </b-row>
           </b-card-body>
         </b-collapse>
       </b-card>
-      <b-button type="submit" variant="success">Save</b-button>
+      <b-button type="submit" variant="secondary" size="lg" class="mt-4">Save</b-button>
     </b-form>
+    <div v-if="loading" class="loading">
+      <b-spinner style="width: 4rem; height: 4rem; margin-top: 80px" variant="secondary"></b-spinner>
+    </div>
   </div>
 </template>
 
@@ -176,14 +178,11 @@ export default {
       berufsurkunde: false,
       cc_vert_anerk: null
     },
-    contractOptions: [
+    options: [
       { text: "Yes", value: true },
       { text: "No", value: false }
     ],
-    confirmationOptions: [
-      { text: "Yes", value: true },
-      { text: "No", value: false }
-    ]
+    loading: true
   }),
   methods: {
     getFields(url) {
@@ -196,18 +195,32 @@ export default {
         }
       }).then(res => {
         this.fieldsConfig = res.data.fields;
+        this.get("/casedata?a=get&sid=wconen&applicant_id=1313");
       });
     },
-    // get(url) {
-    //   this.$axios({
-    //     url: url,
-    //     method: "GET",
-    //     headers: {
-    //       Authorization: "Basic " + window.btoa("test:pkotest9000"),
-    //       "Content-Type": "application/json"
-    //     }
-    //   }).then(res => console.log(res.data));
-    // },
+    get(url) {
+      this.$axios({
+        url: url,
+        method: "GET",
+        headers: {
+          Authorization: "Basic " + window.btoa("test:pkotest9000"),
+          "Content-Type": "application/json"
+        }
+      })
+        .then(res => {
+          for (let source in res.data) {
+            if (res.data[source] !== this.fieldsModels[source]) {
+              if (res.data[source].substr(0, 20) === "data:application/pdf") {
+                this.fieldsModels[source] = null;
+              } else {
+                this.fieldsModels[source] = res.data[source];
+              }
+            }
+          }
+          this.loading = false;
+        })
+        .catch(err => console.log(err));
+    },
     send() {
       const bodyFormData = new FormData();
       bodyFormData.set("data", JSON.stringify(this.fieldsModels));
@@ -219,34 +232,33 @@ export default {
           "Content-Type": "application/json"
         },
         data: bodyFormData
-      })
-        .then(res => console.log(res))
-        .catch(err => console.log(err));
+      });
     },
     handleFiles(name) {
-      const element = document.querySelector(`#${name}`);
-      const file = element.files[0];
-      console.log(element);
-      const fr = new FileReader();
-      var base64;
-      fr.onload = function(event) {
-        base64 = event.target.result;
-      };
-      fr.readAsDataURL(file);
-      setTimeout(() => {
-        this.fieldsModels[name] = base64;
-      }, 50);
+      this.loading = true;
+      return new Promise(resolve => {
+        const element = document.querySelector(`#${name}`);
+        const file = element.files[0];
+        const fr = new FileReader();
+        fr.onload = function(event) {
+          resolve(event.target.result);
+        };
+        fr.readAsDataURL(file);
+      }).then(res => {
+        this.fieldsModels[name] = res;
+        this.loading = false;
+      });
     }
   },
   created() {
     this.getFields("/casedata?a=init&sid=wconen");
-    // this.get("/casedata?a=get&sid=wconen&applicant_id=1313");
   }
 };
 </script>
 
 <style>
 #case_data {
+  position: relative;
   background-color: #fff;
   margin: 0 auto;
   padding: 15px;
@@ -255,5 +267,16 @@ export default {
   -moz-osx-font-smoothing: grayscale;
   text-align: center;
   color: #2c3e50;
+}
+#case_data .loading {
+  position: absolute;
+  display: flex;
+  justify-content: center;
+  background-color: rgba(255, 255, 255, 0.6);
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 2;
 }
 </style>
