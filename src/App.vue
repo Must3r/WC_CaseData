@@ -5,19 +5,23 @@
     </div> -->
     <b-form @submit.prevent="send()">
       <b-card
-        v-for="(section, index) in fieldsConfig"
+        v-for="section in fieldsConfig"
         :key="section.name"
         :tag="section.type"
         no-body
         class="mb-3"
       >
         <b-card-header header-tag="header" class="p-1" role="tab">
-          <b-button block v-b-toggle="section.name" variant="secondary" class="text-left">{{ section.title }}</b-button>
+          <b-button
+            block
+            v-b-toggle="section.name"
+            :variant="section.name === '3' && fieldsModels['31'] === true ? 'success' : section.name === '3' && fieldsModels['31'] === false ? 'danger' : 'secondary'"
+            class="text-left"
+          >{{ section.title }}</b-button>
         </b-card-header>
         <b-collapse
           :id="section.name"
           accordion="my-accordion"
-          :visible="index === 0"
           role="tabpanel"
         >
           <b-card-body>
@@ -36,8 +40,8 @@
                   <h5 class="text-left font-weight-bold" v-text="field.title"></h5>
                   <b-row>
                     <b-col
-                      class="mb-3"
                       v-for="subfield in field.children"
+                      :class="[{'text-left': subfield.type === 'checkbox'}, 'mb-3']"
                       :key="subfield.name"
                       cols="12"
                       md="6"
@@ -51,7 +55,7 @@
                       </template>
                       <template v-else-if="subfield.type === 'yes_no'">
                         <b-row no-gutters>
-                          <b-col class="mb-3" cols="6">
+                          <b-col class="text-left mb-3" cols="6">
                             <span>{{ subfield.title }}</span>
                           </b-col>
                           <b-col class="mb-3" cols="6">
@@ -82,6 +86,13 @@
                           max-rows="6"
                         ></b-form-textarea>
                       </template>
+                      <template v-else-if="subfield.type === 'checkbox'">
+                        <b-form-checkbox-group v-model="fieldsModels[subfield.name]">
+                          <b-form-checkbox v-for="option in checkboxOptions[subfield.name]" :key="option.id" :value="option.title">
+                            {{ option.title }}
+                          </b-form-checkbox>
+                        </b-form-checkbox-group>
+                      </template>
                       <template v-else>
                         <label class="d-block text-left" :for="subfield.name" v-text="subfield.title"></label>
                         <b-form-input
@@ -103,7 +114,7 @@
                   </template>
                   <template v-else-if="field.type === 'yes_no'">
                     <b-row no-gutters>
-                      <b-col class="mb-3" cols="6">
+                      <b-col class="text-left mb-3" cols="6">
                         <span>{{ field.title }}</span>
                       </b-col>
                       <b-col class="mb-3" cols="6">
@@ -133,6 +144,15 @@
                       max-rows="6"
                     ></b-form-textarea>
                   </template>
+                  <template v-else-if="field.type === 'checkbox'">
+                    <b-form-checkbox-group id="checkbox-group-2">
+                      <!-- v-model="selected" -->
+                      <b-form-checkbox value="orange">Orange</b-form-checkbox>
+                      <b-form-checkbox value="apple">Apple</b-form-checkbox>
+                      <b-form-checkbox value="pineapple">Pineapple</b-form-checkbox>
+                      <b-form-checkbox value="grape">Grape</b-form-checkbox>
+                    </b-form-checkbox-group>
+                  </template>
                   <template v-else>
                     <b-form-input
                       :type="field.type"
@@ -152,7 +172,7 @@
         size="lg"
         class="mt-4"
         v-show="!loading"
-        :disabled="sending"
+        :disabled="sending || sent || sendingError"
       >
         <span v-if="sending">
           <b-spinner label="Saving data..."></b-spinner>
@@ -186,6 +206,7 @@ export default {
       { text: "Yes", value: true },
       { text: "No", value: false }
     ],
+    checkboxOptions: {},
     urlParams: {},
     loading: true,
     sending: false,
@@ -226,6 +247,19 @@ export default {
         }
       }).then(res => {
         this.fieldsConfig = res.data.fields;
+        for (let item in this.fieldsConfig) {
+          if (this.fieldsConfig[item].children) {
+            for (let child in this.fieldsConfig[item].children) {
+              if (this.fieldsConfig[item].children[child].children) {
+                for (let subchild in this.fieldsConfig[item].children[child].children) {
+                  if (this.fieldsConfig[item].children[child].children[subchild].options) {
+                    this.checkboxOptions[this.fieldsConfig[item].children[child].children[subchild].name] = this.fieldsConfig[item].children[child].children[subchild].options
+                  }
+                }
+              }
+            }
+          }
+        }
         this.get(`/casedata?a=get&sid=wconen&applicant_id=${this.urlParams.applicant_id}`);
       });
     },
@@ -252,7 +286,6 @@ export default {
             // this.max++
           }
           this.loading = false;
-          console.log(res.data)
         })
         .catch(err => console.log(err));
     },
