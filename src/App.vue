@@ -88,10 +88,17 @@
                       </template>
                       <template v-else-if="subfield.type === 'checkbox'">
                         <b-form-checkbox-group v-model="fieldsModels[subfield.name]">
-                          <b-form-checkbox v-for="option in checkboxOptions[subfield.name]" :key="option.id" :value="option.title">
+                          <b-form-checkbox v-for="option in apiOptions[subfield.name]" :key="option.id" :value="option.title">
                             {{ option.title }}
                           </b-form-checkbox>
                         </b-form-checkbox-group>
+                      </template>
+                      <template v-else-if="subfield.type === 'select'">
+                        <b-form-select
+                          v-model="fieldsModels[subfield.name]"
+                          text-field="title"
+                          :options="apiOptions[subfield.name]"
+                        ></b-form-select>
                       </template>
                       <template v-else>
                         <label class="d-block text-left" :for="subfield.name" v-text="subfield.title"></label>
@@ -145,13 +152,18 @@
                     ></b-form-textarea>
                   </template>
                   <template v-else-if="field.type === 'checkbox'">
-                    <b-form-checkbox-group id="checkbox-group-2">
-                      <!-- v-model="selected" -->
-                      <b-form-checkbox value="orange">Orange</b-form-checkbox>
-                      <b-form-checkbox value="apple">Apple</b-form-checkbox>
-                      <b-form-checkbox value="pineapple">Pineapple</b-form-checkbox>
-                      <b-form-checkbox value="grape">Grape</b-form-checkbox>
+                    <b-form-checkbox-group v-model="fieldsModels[field.name]">
+                      <b-form-checkbox v-for="option in apiOptions[field.name]" :key="option.id" :value="option.title">
+                        {{ option.title }}
+                      </b-form-checkbox>
                     </b-form-checkbox-group>
+                  </template>
+                  <template v-else-if="field.type === 'select'">
+                    <b-form-select
+                      v-model="fieldsModels[field.name]"
+                      text-field="title"
+                      :options="apiOptions[field.name]"
+                    ></b-form-select>
                   </template>
                   <template v-else>
                     <b-form-input
@@ -206,7 +218,7 @@ export default {
       { text: "Yes", value: true },
       { text: "No", value: false }
     ],
-    checkboxOptions: {},
+    apiOptions: {},
     urlParams: {},
     loading: true,
     sending: false,
@@ -253,7 +265,7 @@ export default {
               if (this.fieldsConfig[item].children[child].children) {
                 for (let subchild in this.fieldsConfig[item].children[child].children) {
                   if (this.fieldsConfig[item].children[child].children[subchild].options) {
-                    this.checkboxOptions[this.fieldsConfig[item].children[child].children[subchild].name] = this.fieldsConfig[item].children[child].children[subchild].options
+                    this.apiOptions[this.fieldsConfig[item].children[child].children[subchild].name] = this.fieldsConfig[item].children[child].children[subchild].options
                   }
                 }
               }
