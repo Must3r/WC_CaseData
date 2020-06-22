@@ -230,10 +230,10 @@ export default {
   }),
   methods: {
     init () {
-      // const url = (window.location != window.parent.location)
-      //   ? document.referrer
-      //   : document.location.href
-      const url = 'https://job-server.net/js/case_data/?sid=wconen&applicant_id=1313'
+      const url = (window.location != window.parent.location)
+        ? document.referrer
+        : document.location.href
+      // const url = 'https://job-server.net/js/case_data/?sid=wconen&applicant_id=1313'
       this.getParams(url)
       this.getFields(`/casedata?a=init&sid=wconen&applicant_id=${this.urlParams.applicant_id}`)
     },
