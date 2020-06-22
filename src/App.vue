@@ -27,49 +27,120 @@
                 :key="field.name"
                 class="mb-3"
                 cols="12"
-                :sm="field.name === 'title' || field.name === 'birth_date' ? '4' :
+                :sm="field.children ? '12' : field.name === 'title' || field.name === 'birth_date' ? '4' :
                   field.name === 'fname' || field.name === 'birth_place' ? '8' :
                   field.name === 'address' ? '12' :
                   '6'"
               >
-                <template v-if="field.type === 'date'">
-                  <b-form-datepicker
-                    v-model="fieldsModels[field.name]"
-                    :placeholder="field.title"
-                    locale="en"
-                  ></b-form-datepicker>
-                </template>
-                <template v-else-if="field.type === 'yes_no'">
-                  <b-row no-gutters>
-                    <b-col class="mb-3" cols="6">
-                      <span>{{ field.title }}</span>
-                    </b-col>
-                    <b-col class="mb-3" cols="6">
-                      <b-form-radio-group
-                        :id="field.name"
-                        v-model="fieldsModels[field.name]"
-                        :options="options"
-                      ></b-form-radio-group>
+                <div v-if="field.children">
+                  <h5 class="text-left font-weight-bold" v-text="field.title"></h5>
+                  <b-row>
+                    <b-col
+                      class="mb-3"
+                      v-for="subfield in field.children"
+                      :key="subfield.name"
+                      cols="12"
+                      md="6"
+                    >
+                      <template v-if="subfield.type === 'date'">
+                        <b-form-datepicker
+                          v-model="fieldsModels[subfield.name]"
+                          :placeholder="subfield.title"
+                          locale="en"
+                        ></b-form-datepicker>
+                      </template>
+                      <template v-else-if="subfield.type === 'yes_no'">
+                        <b-row no-gutters>
+                          <b-col class="mb-3" cols="6">
+                            <span>{{ subfield.title }}</span>
+                          </b-col>
+                          <b-col class="mb-3" cols="6">
+                            <b-form-radio-group
+                              :id="subfield.name"
+                              v-model="fieldsModels[subfield.name]"
+                              :options="options"
+                            ></b-form-radio-group>
+                          </b-col>
+                        </b-row>
+                      </template>
+                      <template v-else-if="subfield.type === 'file'">
+                        <p class="mb-2">{{ subfield.title }}</p>
+                        <b-form-file
+                          :id="subfield.name"
+                          placeholder="Choose a file or drop it here..."
+                          drop-placeholder="Drop file here..."
+                          accept=".pdf"
+                          @change="handleFiles(subfield.name)"
+                        ></b-form-file>
+                      </template>
+                      <template v-else-if="subfield.type === 'bigtext'">
+                        <label class="d-block text-left" :for="subfield.name" v-text="subfield.title"></label>
+                        <b-form-textarea
+                          :id="subfield.name"
+                          v-model="fieldsModels[subfield.name]"
+                          rows="3"
+                          max-rows="6"
+                        ></b-form-textarea>
+                      </template>
+                      <template v-else>
+                        <label class="d-block text-left" :for="subfield.name" v-text="subfield.title"></label>
+                        <b-form-input
+                          :id="subfield.name"
+                          :type="subfield.type"
+                          v-model="fieldsModels[subfield.name]"
+                        />
+                      </template>
                     </b-col>
                   </b-row>
-                </template>
-                <template v-else-if="field.type === 'file'">
-                  <p class="mb-2">{{ field.title }}</p>
-                  <b-form-file
-                    :id="field.name"
-                    placeholder="Choose a file or drop it here..."
-                    drop-placeholder="Drop file here..."
-                    accept=".pdf"
-                    @change="handleFiles(field.name)"
-                  ></b-form-file>
-                </template>
-                <template v-else>
-                  <b-form-input
-                    :type="field.type"
-                    v-model="fieldsModels[field.name]"
-                    :placeholder="field.title"
-                  />
-                </template>
+                </div>
+                <div v-else>
+                  <template v-if="field.type === 'date'">
+                    <b-form-datepicker
+                      v-model="fieldsModels[field.name]"
+                      :placeholder="field.title"
+                      locale="en"
+                    ></b-form-datepicker>
+                  </template>
+                  <template v-else-if="field.type === 'yes_no'">
+                    <b-row no-gutters>
+                      <b-col class="mb-3" cols="6">
+                        <span>{{ field.title }}</span>
+                      </b-col>
+                      <b-col class="mb-3" cols="6">
+                        <b-form-radio-group
+                          :id="field.name"
+                          v-model="fieldsModels[field.name]"
+                          :options="options"
+                        ></b-form-radio-group>
+                      </b-col>
+                    </b-row>
+                  </template>
+                  <template v-else-if="field.type === 'file'">
+                    <p class="mb-2">{{ field.title }}</p>
+                    <b-form-file
+                      :id="field.name"
+                      placeholder="Choose a file or drop it here..."
+                      drop-placeholder="Drop file here..."
+                      accept=".pdf"
+                      @change="handleFiles(field.name)"
+                    ></b-form-file>
+                  </template>
+                  <template v-else-if="field.type === 'bigtext'">
+                    <b-form-textarea
+                      v-model="fieldsModels[field.name]"
+                      :placeholder="field.title"
+                      rows="3"
+                      max-rows="6"
+                    ></b-form-textarea>
+                  </template>
+                  <template v-else>
+                    <b-form-input
+                      :type="field.type"
+                      v-model="fieldsModels[field.name]"
+                      :placeholder="field.title"
+                    />
+                  </template>
+                </div>
               </b-col>
             </b-row>
           </b-card-body>
@@ -97,6 +168,7 @@
         </span>
       </b-button>
       <p class="text-danger" v-text="errorMessage" />
+      {{fieldsModels.length}}
     </b-form>
     <div v-if="loading" class="loading">
       <b-spinner style="width: 4rem; height: 4rem; margin-top: 80px" variant="secondary"></b-spinner>
@@ -125,10 +197,10 @@ export default {
   }),
   methods: {
     init () {
-      // var url = (window.location != window.parent.location)
-      //   ? document.referrer
-      //   : document.location.href
-      const url = 'https://job-server.net/js/case_data/?sid=wconen&applicant_id=9494858'
+      var url = (window.location != window.parent.location)
+        ? document.referrer
+        : document.location.href
+      // const url = 'https://job-server.net/js/case_data/?sid=wconen&applicant_id=1313'
       this.getParams(url)
       this.getFields(`/casedata?a=init&sid=wconen&applicant_id=${this.urlParams.applicant_id}`)
     },
@@ -142,9 +214,7 @@ export default {
         var pair = vars[i].split('=');
         params[pair[0]] = decodeURIComponent(pair[1]);
       }
-      console.log(params)
       this.urlParams = params;
-      console.log(this.urlParams)
     },
     getFields(url) {
       this.$axios({
@@ -172,9 +242,14 @@ export default {
           this.count = 0
           this.max = 0
           for (let source in res.data) {
+            if (source.children) {
+              for (let subsource in source.children) {
+                this.fieldsModels[subsource] = res.data[subsource];
+              }
+            }
             this.fieldsModels[source] = res.data[source];
-            if (this.fieldsModels[source] || this.fieldsModels[source] === false) this.count++
-            this.max++
+            // if (this.fieldsModels[source] || this.fieldsModels[source] === false) this.count++
+            // this.max++
           }
           this.loading = false;
           console.log(res.data)
