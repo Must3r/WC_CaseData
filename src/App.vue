@@ -1,9 +1,9 @@
 <template>
   <div id="case_data" role="tablist">
-    <!-- <div style="height: 55px; left: 0; right: 0; top: 0; z-index: 1" class="position-fixed d-flex align-items-center bg-white px-3">
-      <b-progress :value="count" :max="max" show-progress height="2rem" class="w-100"></b-progress>
-    </div> -->
-    <b-form @submit.prevent="send()">
+    <div style="height: 55px; left: 0; right: 0; top: 0; z-index: 1" class="position-fixed d-flex align-items-center bg-white px-3">
+      <b-progress variant="success" :value="count" :max="max" show-progress height="2rem" class="w-100"></b-progress>
+    </div>
+    <b-form style="margin-top: 60px" @submit.prevent="send()">
       <b-card
         v-for="section in fieldsConfig"
         :key="section.name"
@@ -230,10 +230,10 @@ export default {
   }),
   methods: {
     init () {
-      var url = (window.location != window.parent.location)
-        ? document.referrer
-        : document.location.href
-      // const url = 'https://job-server.net/js/case_data/?sid=wconen&applicant_id=1313'
+      // const url = (window.location != window.parent.location)
+      //   ? document.referrer
+      //   : document.location.href
+      const url = 'https://job-server.net/js/case_data/?sid=wconen&applicant_id=1313'
       this.getParams(url)
       this.getFields(`/casedata?a=init&sid=wconen&applicant_id=${this.urlParams.applicant_id}`)
     },
@@ -294,8 +294,8 @@ export default {
               }
             }
             this.fieldsModels[source] = res.data[source];
-            // if (this.fieldsModels[source] || this.fieldsModels[source] === false) this.count++
-            // this.max++
+            if (this.fieldsModels[source] || this.fieldsModels[source] === false) this.count++
+            this.max++
           }
           this.loading = false;
         })
@@ -318,6 +318,7 @@ export default {
         this.sent = true
         setTimeout(() => {
           this.sent = false
+          this.get(`/casedata?a=get&sid=wconen&applicant_id=${this.urlParams.applicant_id}`)
         }, 3000)
       }).catch(err => {
         this.sendingError = true
