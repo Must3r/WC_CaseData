@@ -37,6 +37,7 @@
                   '6'"
               >
                 <div v-if="field.children">
+                  {{field.children.length}}
                   <h5 class="text-left font-weight-bold" v-text="field.title"></h5>
                   <b-row>
                     <b-col
@@ -97,8 +98,13 @@
                         <b-form-select
                           v-model="fieldsModels[subfield.name]"
                           text-field="title"
+                          value-field="title"
                           :options="apiOptions[subfield.name]"
-                        ></b-form-select>
+                        >
+                          <template v-slot:first>
+                            <b-form-select-option :value="null">-- Please select an option --</b-form-select-option>
+                          </template>
+                        </b-form-select>
                       </template>
                       <template v-else>
                         <label class="d-block text-left" :for="subfield.name" v-text="subfield.title"></label>
@@ -163,7 +169,11 @@
                       v-model="fieldsModels[field.name]"
                       text-field="title"
                       :options="apiOptions[field.name]"
-                    ></b-form-select>
+                    >
+                      <template v-slot:first>
+                        <b-form-select-option :value="null">-- Please select an option --</b-form-select-option>
+                      </template>
+                    </b-form-select>
                   </template>
                   <template v-else>
                     <b-form-input
@@ -226,14 +236,15 @@ export default {
     sendingError: false,
     errorMessage: '',
     count: 0,
-    max: 0
+    max: 0,
+    parsedData: {}
   }),
   methods: {
     init () {
-      const url = (window.location != window.parent.location)
-        ? document.referrer
-        : document.location.href
-      // const url = 'https://job-server.net/js/case_data/?sid=wconen&applicant_id=1313'
+      // const url = (window.location != window.parent.location)
+      //   ? document.referrer
+      //   : document.location.href
+      const url = 'https://job-server.net/js/case_data/?sid=wconen&applicant_id=1313'
       this.getParams(url)
       this.getFields(`/casedata?a=init&sid=wconen&applicant_id=${this.urlParams.applicant_id}`)
     },
@@ -260,8 +271,10 @@ export default {
       }).then(res => {
         this.fieldsConfig = res.data.fields;
         for (let item in this.fieldsConfig) {
+          this.parsedData[this.fieldsConfig[item].name] = {}
           if (this.fieldsConfig[item].children) {
             for (let child in this.fieldsConfig[item].children) {
+              this.parsedData[this.fieldsConfig[item].name][this.fieldsConfig[item].children[child].name] = {}
               if (this.fieldsConfig[item].children[child].children) {
                 for (let subchild in this.fieldsConfig[item].children[child].children) {
                   if (this.fieldsConfig[item].children[child].children[subchild].options) {
@@ -272,6 +285,8 @@ export default {
             }
           }
         }
+        console.log(this.parsedData)
+        // console.log(this.fieldsConfig)
         this.get(`/casedata?a=get&sid=wconen&applicant_id=${this.urlParams.applicant_id}`);
       });
     },
@@ -288,15 +303,16 @@ export default {
           this.count = 0
           this.max = 0
           for (let source in res.data) {
-            if (source.children) {
-              for (let subsource in source.children) {
-                this.fieldsModels[subsource] = res.data[subsource];
-              }
-            }
-            this.fieldsModels[source] = res.data[source];
-            if (this.fieldsModels[source] || this.fieldsModels[source] === false) this.count++
-            this.max++
+            // if (source.children) {
+            //   for (let subsource in source.children) {
+            //     this.fieldsModels[subsource] = res.data[subsource]
+            //   }
+            // }
+            this.fieldsModels[source] = res.data[source]
+            // if (this.fieldsModels[source] || this.fieldsModels[source] === false) this.count++
+            // this.max++
           }
+          console.log(res.data)
           this.loading = false;
         })
         .catch(err => console.log(err));
