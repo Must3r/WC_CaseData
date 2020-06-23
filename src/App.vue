@@ -1,9 +1,6 @@
 <template>
   <div id="case_data" role="tablist">
-    <div style="height: 55px; left: 0; right: 0; top: 0; z-index: 1" class="position-fixed d-flex align-items-center bg-white px-3">
-      <b-progress variant="success" :value="count" :max="max" show-progress height="2rem" class="w-100"></b-progress>
-    </div>
-    <b-form style="margin-top: 60px" @submit.prevent="send()">
+    <b-form @submit.prevent="send()">
       <b-card
         v-for="section in fieldsConfig"
         :key="section.name"
@@ -25,6 +22,19 @@
           role="tabpanel"
         >
           <b-card-body>
+            <b-progress
+              v-if="progress[section.name]"
+              :value="progress[section.name].count"
+              :max="progress[section.name].max"
+              :variant="
+                (progress[section.name].count / progress[section.name].max * 100) > 85 ? 'success':
+                (progress[section.name].count / progress[section.name].max) > 1 || (progress[section.name].count / progress[section.name].max) <= 85 ? 'warning' :
+                'grey'
+              "
+              class="mb-4"
+              show-progress
+              height="2rem"
+            ></b-progress>
             <b-row>
               <b-col
                 v-for="field in section.children"
@@ -37,7 +47,6 @@
                   '6'"
               >
                 <div v-if="field.children">
-                  {{field.children.length}}
                   <h5 class="text-left font-weight-bold" v-text="field.title"></h5>
                   <b-row>
                     <b-col
@@ -235,8 +244,7 @@ export default {
     sent: false,
     sendingError: false,
     errorMessage: '',
-    count: 0,
-    max: 0,
+    progress: {},
     parsedData: {}
   }),
   methods: {
@@ -274,19 +282,21 @@ export default {
           this.parsedData[this.fieldsConfig[item].name] = {}
           if (this.fieldsConfig[item].children) {
             for (let child in this.fieldsConfig[item].children) {
-              this.parsedData[this.fieldsConfig[item].name][this.fieldsConfig[item].children[child].name] = {}
               if (this.fieldsConfig[item].children[child].children) {
                 for (let subchild in this.fieldsConfig[item].children[child].children) {
                   if (this.fieldsConfig[item].children[child].children[subchild].options) {
                     this.apiOptions[this.fieldsConfig[item].children[child].children[subchild].name] = this.fieldsConfig[item].children[child].children[subchild].options
                   }
+                  this.parsedData[this.fieldsConfig[item].name][this.fieldsConfig[item].children[child].children[subchild].name] = null
                 }
+              } else {
+                this.parsedData[this.fieldsConfig[item].name][this.fieldsConfig[item].children[child].name] = null
               }
             }
+          } else {
+            this.parsedData[this.fieldsConfig[item].name] = null
           }
         }
-        console.log(this.parsedData)
-        // console.log(this.fieldsConfig)
         this.get(`/casedata?a=get&sid=wconen&applicant_id=${this.urlParams.applicant_id}`);
       });
     },
@@ -300,19 +310,22 @@ export default {
         }
       })
         .then(res => {
-          this.count = 0
-          this.max = 0
           for (let source in res.data) {
-            // if (source.children) {
-            //   for (let subsource in source.children) {
-            //     this.fieldsModels[subsource] = res.data[subsource]
-            //   }
-            // }
             this.fieldsModels[source] = res.data[source]
-            // if (this.fieldsModels[source] || this.fieldsModels[source] === false) this.count++
-            // this.max++
+            for (let section in this.parsedData) {
+              let count = 0
+              this.progress[section] = {}
+              for (let prop in this.parsedData[section]) {
+                if (prop === source) {
+                  this.parsedData[section][prop] = res.data[source]
+                }
+                if (this.parsedData[section][prop] || this.parsedData[section][prop] === false) count ++
+              }
+              this.progress[section].count = count
+              this.progress[section].max = Object.keys(this.parsedData[section]).length
+            }
           }
-          console.log(res.data)
+          console.log(this.parsedData)
           this.loading = false;
         })
         .catch(err => console.log(err));
