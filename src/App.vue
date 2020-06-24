@@ -13,8 +13,37 @@
             block
             v-b-toggle="section.name"
             :variant="section.name === '3' && fieldsModels['31'] === true ? 'success' : section.name === '3' && fieldsModels['31'] === false ? 'danger' : 'secondary'"
-            class="text-left"
-          >{{ section.title }}</b-button>
+            class="position-relative d-flex justify-content-between text-left p-0"
+          >
+            <b-progress
+              v-if="progress[section.name] && section.name !== '3'"
+              :value="progress[section.name].count"
+              :max="progress[section.name].max"
+              :variant="
+                (progress[section.name].count / progress[section.name].max * 100) > 85 ? 'success':
+                (progress[section.name].count / progress[section.name].max) > 1 || (progress[section.name].count / progress[section.name].max) <= 85 ? 'warning' :
+                'secondary'
+              "
+              :class="[
+                {'bg-success': section.name === '3' && fieldsModels['31'] === true},
+                {'bg-danger': section.name === '3' && fieldsModels['31'] === false},
+                'bg-secondary',
+                'position-absolute',
+                'w-100',
+                'h-100'
+              ]"
+            ></b-progress>
+            <p
+              class="position-relative mb-0 px-3 py-1"
+              style="z-index:1"
+            >{{ section.title }}</p>
+            <p
+              v-if="progress[section.name] && progress[section.name] != '3'"
+              class="mb-0 px-3 py-1"
+              style="z-index:1"
+              v-text="`${(progress[section.name].count / progress[section.name].max * 100).toFixed(0)} %`"
+            ></p>
+          </b-button>
         </b-card-header>
         <b-collapse
           :id="section.name"
@@ -22,19 +51,6 @@
           role="tabpanel"
         >
           <b-card-body>
-            <b-progress
-              v-if="progress[section.name]"
-              :value="progress[section.name].count"
-              :max="progress[section.name].max"
-              :variant="
-                (progress[section.name].count / progress[section.name].max * 100) > 85 ? 'success':
-                (progress[section.name].count / progress[section.name].max) > 1 || (progress[section.name].count / progress[section.name].max) <= 85 ? 'warning' :
-                'grey'
-              "
-              class="mb-4"
-              show-progress
-              height="2rem"
-            ></b-progress>
             <b-row>
               <b-col
                 v-for="field in section.children"
@@ -105,15 +121,16 @@
                       </template>
                       <template v-else-if="subfield.type === 'select'">
                         <b-form-select
-                          v-model="fieldsModels[subfield.name]"
                           text-field="title"
                           value-field="title"
                           :options="apiOptions[subfield.name]"
+                          v-model="fieldsModels[subfield.name]"
                         >
                           <template v-slot:first>
                             <b-form-select-option :value="null">-- Please select an option --</b-form-select-option>
                           </template>
                         </b-form-select>
+                        {{fieldsModels[subfield.name]}}
                       </template>
                       <template v-else>
                         <label class="d-block text-left" :for="subfield.name" v-text="subfield.title"></label>
@@ -219,7 +236,6 @@
         </span>
       </b-button>
       <p class="text-danger" v-text="errorMessage" />
-      {{fieldsModels.length}}
     </b-form>
     <div v-if="loading" class="loading">
       <b-spinner style="width: 4rem; height: 4rem; margin-top: 80px" variant="secondary"></b-spinner>
@@ -287,16 +303,20 @@ export default {
                   if (this.fieldsConfig[item].children[child].children[subchild].options) {
                     this.apiOptions[this.fieldsConfig[item].children[child].children[subchild].name] = this.fieldsConfig[item].children[child].children[subchild].options
                   }
+                  this.fieldsModels[this.fieldsConfig[item].children[child].children[subchild].name] = null
                   this.parsedData[this.fieldsConfig[item].name][this.fieldsConfig[item].children[child].children[subchild].name] = null
                 }
               } else {
+                this.fieldsModels[this.fieldsConfig[item].children[child].name] = null
                 this.parsedData[this.fieldsConfig[item].name][this.fieldsConfig[item].children[child].name] = null
               }
             }
           } else {
+            this.fieldsModels[this.fieldsConfig[item].name] = null
             this.parsedData[this.fieldsConfig[item].name] = null
           }
         }
+        console.log(this.fieldsModels)
         this.get(`/casedata?a=get&sid=wconen&applicant_id=${this.urlParams.applicant_id}`);
       });
     },
@@ -325,7 +345,6 @@ export default {
               this.progress[section].max = Object.keys(this.parsedData[section]).length
             }
           }
-          console.log(this.parsedData)
           this.loading = false;
         })
         .catch(err => console.log(err));
@@ -345,9 +364,9 @@ export default {
       }).then(() => {
         this.sending = false
         this.sent = true
+        this.get(`/casedata?a=get&sid=wconen&applicant_id=${this.urlParams.applicant_id}`)
         setTimeout(() => {
           this.sent = false
-          this.get(`/casedata?a=get&sid=wconen&applicant_id=${this.urlParams.applicant_id}`)
         }, 3000)
       }).catch(err => {
         this.sendingError = true
