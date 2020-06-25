@@ -327,7 +327,6 @@ export default {
             this.parsedData[this.fieldsConfig[item].name] = null
           }
         }
-        console.log(this.fieldsModels)
         this.get(`/casedata?a=get&sid=wconen&applicant_id=${this.urlParams.applicant_id}`);
       });
     },
