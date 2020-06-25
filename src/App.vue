@@ -265,7 +265,7 @@ export default {
     options: [
       { text: "Yes", value: true },
       { text: "No", value: false },
-      { text: "Null", value: null }
+      { text: "", value: null }
     ],
     apiOptions: {},
     urlParams: {},
@@ -437,5 +437,8 @@ export default {
 .collapsed .when-open,
 .not-collapsed .when-closed {
   display: none;
+}
+.bv-no-focus-ring {
+  display: flex;
 }
 </style>
