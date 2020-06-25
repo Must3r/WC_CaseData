@@ -16,9 +16,7 @@
             class="position-relative d-flex justify-content-between align-items-center p-0"
             style="min-height: 32px"
           >
-            <h2 style="z-index:1" class="text-left h4 mb-0 pl-3">
-              <small>{{ section.title }}</small>
-            </h2>
+            <p style="z-index:1" class="text-left mb-0 pl-3" v-text="section.title"></p>
             <b-progress
               v-if="progress[section.name] && section.name !== '3'"
               :value="progress[section.name].count"
@@ -279,10 +277,10 @@ export default {
   }),
   methods: {
     init () {
-      const url = (window.location != window.parent.location)
-        ? document.referrer
-        : document.location.href
-      // const url = 'https://job-server.net/js/case_data/?sid=wconen&applicant_id=1313131'
+      // const url = (window.location != window.parent.location)
+      //   ? document.referrer
+      //   : document.location.href
+      const url = 'https://job-server.net/js/case_data/?sid=wconen&applicant_id=1313131'
       this.getParams(url)
       this.getFields(`/casedata?a=init&sid=wconen&applicant_id=${this.urlParams.applicant_id}`)
     },
