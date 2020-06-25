@@ -6,15 +6,17 @@
         :key="section.name"
         :tag="section.type"
         no-body
-        class="mb-3"
+        class="border-0 mb-4"
       >
         <b-card-header header-tag="header" class="p-1" role="tab">
           <b-button
             block
             v-b-toggle="section.name"
             :variant="section.name === '3' && fieldsModels['31'] === true ? 'success' : section.name === '3' && fieldsModels['31'] === false ? 'danger' : 'secondary'"
-            class="position-relative d-flex justify-content-between text-left p-0"
+            class="position-relative d-flex justify-content-between align-items-center p-0"
+            style="min-height: 32px"
           >
+            <h2 style="z-index:1" class="text-left h5 mb-0 pl-3">{{ section.title }}</h2>
             <b-progress
               v-if="progress[section.name] && section.name !== '3'"
               :value="progress[section.name].count"
@@ -34,15 +36,20 @@
               ]"
             ></b-progress>
             <p
-              class="position-relative mb-0 px-3 py-1"
+              class="mb-0 pr-3 py-1"
               style="z-index:1"
-            >{{ section.title }}</p>
-            <p
-              v-if="progress[section.name] && progress[section.name] != '3'"
-              class="mb-0 px-3 py-1"
-              style="z-index:1"
-              v-text="`${(progress[section.name].count / progress[section.name].max * 100).toFixed(0)} %`"
-            ></p>
+            >
+              <span
+                v-if="progress[section.name] && progress[section.name] != '3'"
+                v-text="`${(progress[section.name].count / progress[section.name].max * 100).toFixed(0)} %`"
+              ></span>
+              <span class="when-closed">
+                <b-icon icon="chevron-down" class="ml-3"></b-icon>
+              </span>
+              <span class="when-open">
+                <b-icon icon="chevron-up" class="ml-3"></b-icon>
+              </span>
+            </p>
           </b-button>
         </b-card-header>
         <b-collapse
@@ -73,15 +80,15 @@
                       md="6"
                     >
                       <template v-if="subfield.type === 'date'">
+                        <label class="d-block text-left text-secondary" :for="subfield.name" v-text="subfield.title"></label>
                         <b-form-datepicker
                           v-model="fieldsModels[subfield.name]"
-                          :placeholder="subfield.title"
                           locale="en"
                         ></b-form-datepicker>
                       </template>
                       <template v-else-if="subfield.type === 'yes_no'">
                         <b-row no-gutters>
-                          <b-col class="text-left mb-3" cols="6">
+                          <b-col class="text-left text-secondary mb-3" cols="6">
                             <span>{{ subfield.title }}</span>
                           </b-col>
                           <b-col class="mb-3" cols="6">
@@ -94,7 +101,7 @@
                         </b-row>
                       </template>
                       <template v-else-if="subfield.type === 'file'">
-                        <p class="mb-2">{{ subfield.title }}</p>
+                        <label class="d-block text-left text-secondary" :for="subfield.name" v-text="subfield.title"></label>
                         <b-form-file
                           :id="subfield.name"
                           placeholder="Choose a file or drop it here..."
@@ -104,7 +111,7 @@
                         ></b-form-file>
                       </template>
                       <template v-else-if="subfield.type === 'bigtext'">
-                        <label class="d-block text-left" :for="subfield.name" v-text="subfield.title"></label>
+                        <label class="d-block text-left text-secondary" :for="subfield.name" v-text="subfield.title"></label>
                         <b-form-textarea
                           :id="subfield.name"
                           v-model="fieldsModels[subfield.name]"
@@ -113,6 +120,7 @@
                         ></b-form-textarea>
                       </template>
                       <template v-else-if="subfield.type === 'checkbox'">
+                        <label class="d-block text-left text-secondary" :for="subfield.name" v-text="subfield.title"></label>
                         <b-form-checkbox-group v-model="fieldsModels[subfield.name]">
                           <b-form-checkbox v-for="option in apiOptions[subfield.name]" :key="option.id" :value="option.title">
                             {{ option.title }}
@@ -120,6 +128,7 @@
                         </b-form-checkbox-group>
                       </template>
                       <template v-else-if="subfield.type === 'select'">
+                        <label class="d-block text-left text-secondary" :for="subfield.name" v-text="subfield.title"></label>
                         <b-form-select
                           text-field="title"
                           value-field="title"
@@ -130,10 +139,9 @@
                             <b-form-select-option :value="null">-- Please select an option --</b-form-select-option>
                           </template>
                         </b-form-select>
-                        {{fieldsModels[subfield.name]}}
                       </template>
                       <template v-else>
-                        <label class="d-block text-left" :for="subfield.name" v-text="subfield.title"></label>
+                        <label class="d-block text-left text-secondary" :for="subfield.name" v-text="subfield.title"></label>
                         <b-form-input
                           :id="subfield.name"
                           :type="subfield.type"
@@ -145,15 +153,15 @@
                 </div>
                 <div v-else>
                   <template v-if="field.type === 'date'">
+                    <label class="d-block text-left text-secondary" :for="field.name" v-text="field.title"></label>
                     <b-form-datepicker
                       v-model="fieldsModels[field.name]"
-                      :placeholder="field.title"
                       locale="en"
                     ></b-form-datepicker>
                   </template>
                   <template v-else-if="field.type === 'yes_no'">
                     <b-row no-gutters>
-                      <b-col class="text-left mb-3" cols="6">
+                      <b-col class="text-left text-secondary mb-3" cols="6">
                         <span>{{ field.title }}</span>
                       </b-col>
                       <b-col class="mb-3" cols="6">
@@ -166,7 +174,7 @@
                     </b-row>
                   </template>
                   <template v-else-if="field.type === 'file'">
-                    <p class="mb-2">{{ field.title }}</p>
+                    <label class="d-block text-left text-secondary" :for="field.name" v-text="field.title"></label>
                     <b-form-file
                       :id="field.name"
                       placeholder="Choose a file or drop it here..."
@@ -176,14 +184,15 @@
                     ></b-form-file>
                   </template>
                   <template v-else-if="field.type === 'bigtext'">
+                    <label class="d-block text-left text-secondary" :for="field.name" v-text="field.title"></label>
                     <b-form-textarea
                       v-model="fieldsModels[field.name]"
-                      :placeholder="field.title"
                       rows="3"
                       max-rows="6"
                     ></b-form-textarea>
                   </template>
                   <template v-else-if="field.type === 'checkbox'">
+                    <label class="d-block text-left text-secondary" :for="field.name" v-text="field.title"></label>
                     <b-form-checkbox-group v-model="fieldsModels[field.name]">
                       <b-form-checkbox v-for="option in apiOptions[field.name]" :key="option.id" :value="option.title">
                         {{ option.title }}
@@ -191,10 +200,12 @@
                     </b-form-checkbox-group>
                   </template>
                   <template v-else-if="field.type === 'select'">
+                    <label class="d-block text-left text-secondary" :for="field.name" v-text="field.title"></label>
                     <b-form-select
-                      v-model="fieldsModels[field.name]"
                       text-field="title"
+                      value-field="title"
                       :options="apiOptions[field.name]"
+                      v-model="fieldsModels[field.name]"
                     >
                       <template v-slot:first>
                         <b-form-select-option :value="null">-- Please select an option --</b-form-select-option>
@@ -202,10 +213,10 @@
                     </b-form-select>
                   </template>
                   <template v-else>
+                    <label class="d-block text-left text-secondary" :for="field.name" v-text="field.title"></label>
                     <b-form-input
                       :type="field.type"
                       v-model="fieldsModels[field.name]"
-                      :placeholder="field.title"
                     />
                   </template>
                 </div>
@@ -420,5 +431,9 @@ export default {
   width: 100%;
   height: 100%;
   z-index: 2;
+}
+.collapsed .when-open,
+.not-collapsed .when-closed {
+  display: none;
 }
 </style>
