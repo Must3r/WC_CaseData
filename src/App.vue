@@ -106,7 +106,6 @@
                           :id="subfield.name"
                           placeholder="Choose a file or drop it here..."
                           drop-placeholder="Drop file here..."
-                          accept=".pdf"
                           @change="handleFiles(subfield.name)"
                         ></b-form-file>
                       </template>
@@ -277,10 +276,10 @@ export default {
   }),
   methods: {
     init () {
-      const url = (window.location != window.parent.location)
-        ? document.referrer
-        : document.location.href
-      // const url = 'https://job-server.net/js/case_data/?sid=wconen&applicant_id=1313131'
+      // const url = (window.location != window.parent.location)
+      //   ? document.referrer
+      //   : document.location.href
+      const url = 'https://job-server.net/js/case_data/?sid=wconen&applicant_id=1313131'
       this.getParams(url)
       this.getFields(`/casedata?a=init&sid=wconen&applicant_id=${this.urlParams.applicant_id}`)
     },
@@ -310,6 +309,9 @@ export default {
           this.parsedData[this.fieldsConfig[item].name] = {}
           if (this.fieldsConfig[item].children) {
             for (let child in this.fieldsConfig[item].children) {
+              if (this.fieldsConfig[item].children[child].options) {
+                this.apiOptions[this.fieldsConfig[item].children[child].name] = this.fieldsConfig[item].children[child].options
+              }
               if (this.fieldsConfig[item].children[child].children) {
                 for (let subchild in this.fieldsConfig[item].children[child].children) {
                   if (this.fieldsConfig[item].children[child].children[subchild].options) {
