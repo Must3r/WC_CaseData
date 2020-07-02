@@ -180,6 +180,7 @@
                       drop-placeholder="Drop file here..."
                       @change="handleFiles(`field-${field.name}`)"
                     ></b-form-file>
+                    {{fieldsModels[field.name]}}
                   </template>
                   <template v-else-if="field.type === 'bigtext'">
                     <label class="d-block text-left text-secondary" :for="field.name" v-text="field.title"></label>
@@ -275,10 +276,10 @@ export default {
   }),
   methods: {
     init () {
-      const url = (window.location != window.parent.location)
-        ? document.referrer
-        : document.location.href
-      // const url = 'https://job-server.net/js/case_data/?sid=wconen&applicant_id=1313131'
+      // const url = (window.location != window.parent.location)
+      //   ? document.referrer
+      //   : document.location.href
+      const url = 'https://job-server.net/js/case_data/?sid=wconen&applicant_id=1313131'
       this.getParams(url)
       this.getFields(`/casedata?a=init&sid=wconen&applicant_id=${this.urlParams.applicant_id}`)
     },
@@ -392,12 +393,16 @@ export default {
       this.loading = true;
       return new Promise(resolve => {
         const element = document.querySelector(`#${name}`);
-        const file = element.files[0];
+        let file = element.files[0];
         const fr = new FileReader();
         fr.onload = function(event) {
           resolve(event.target.result);
         };
-        fr.readAsDataURL(file);
+        if (file) {
+          fr.readAsDataURL(file);
+        } else {
+          this.loading = false;
+        }
       }).then(res => {
         this.fieldsModels[name] = res;
         this.loading = false;
