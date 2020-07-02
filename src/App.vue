@@ -93,7 +93,7 @@
                           </b-col>
                           <b-col class="mb-3" cols="6">
                             <b-form-radio-group
-                              :id="subfield.name"
+                              :id="`field-${subfield.name}`"
                               v-model="fieldsModels[subfield.name]"
                               :options="options"
                             ></b-form-radio-group>
@@ -103,16 +103,16 @@
                       <template v-else-if="subfield.type === 'file'">
                         <label class="d-block text-left text-secondary" :for="subfield.name" v-text="subfield.title"></label>
                         <b-form-file
-                          :id="subfield.name"
+                          :id="`field-${subfield.name}`"
                           placeholder="Choose a file or drop it here..."
                           drop-placeholder="Drop file here..."
-                          @change="handleFiles(subfield.name)"
+                          @change="handleFiles(`field-${subfield.name}`)"
                         ></b-form-file>
                       </template>
                       <template v-else-if="subfield.type === 'bigtext'">
                         <label class="d-block text-left text-secondary" :for="subfield.name" v-text="subfield.title"></label>
                         <b-form-textarea
-                          :id="subfield.name"
+                          :id="`field-${subfield.name}`"
                           v-model="fieldsModels[subfield.name]"
                           rows="3"
                           max-rows="6"
@@ -165,7 +165,7 @@
                       </b-col>
                       <b-col class="mb-3" cols="6">
                         <b-form-radio-group
-                          :id="field.name"
+                          :id="`field-${field.name}`"
                           v-model="fieldsModels[field.name]"
                           :options="options"
                         ></b-form-radio-group>
@@ -175,11 +175,10 @@
                   <template v-else-if="field.type === 'file'">
                     <label class="d-block text-left text-secondary" :for="field.name" v-text="field.title"></label>
                     <b-form-file
-                      :id="field.name"
+                      :id="`field-${field.name}`"
                       placeholder="Choose a file or drop it here..."
                       drop-placeholder="Drop file here..."
-                      accept=".pdf"
-                      @change="handleFiles(field.name)"
+                      @change="handleFiles(`field-${field.name}`)"
                     ></b-form-file>
                   </template>
                   <template v-else-if="field.type === 'bigtext'">
