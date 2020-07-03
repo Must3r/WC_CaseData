@@ -102,12 +102,42 @@
                       </template>
                       <template v-else-if="subfield.type === 'file'">
                         <label class="d-block text-left text-secondary" :for="subfield.name" v-text="subfield.title"></label>
-                        <b-form-file
-                          :id="`field-${subfield.name}`"
-                          placeholder="Choose a file or drop it here..."
-                          drop-placeholder="Drop file here..."
-                          @change="handleFiles(subfield.name)"
-                        ></b-form-file>
+                        <b-input-group class="mt-2">
+                          <b-form-file
+                            :id="`field-${subfield.name}`"
+                            placeholder="Choose a file or drop it here..."
+                            drop-placeholder="Drop file here..."
+                            @change="handleFiles(subfield.name)"
+                            :disabled="!!files[subfield.name]"
+                            class="text-left"
+                          >
+                        </b-form-file>
+                          <template v-slot:append>
+                            <b-button @click="uploadFile(subfield.name)" variant="secondary">Upload</b-button>
+                          </template>
+                        </b-input-group>
+                        <div v-if="files[subfield.name] && files[subfield.name].seen" class="d-flex justify-content-between align-items-center mt-2">
+                          <span class="file-name text-secondary">
+                            <i class="d-sm-none">{{files[subfield.name].name.substring(0, 18) + '...' + files[subfield.name].name.substring(files[subfield.name].name.length - 4, files[subfield.name].name.length)}}</i>
+                            <i class="d-none d-sm-inline-block d-md-none">{{files[subfield.name].name.length &gt; 32 ? files[subfield.name].name.substring(0, 32) + '...' + files[subfield.name].name.substring(files[subfield.name].name.length - 4, files[subfield.name].name.length) : files[subfield.name].name}}</i>
+                            <i class="d-none d-md-inline-block d-lg-none">{{files[subfield.name].name.length &gt; 14 ? files[subfield.name].name.substring(0, 14) + '...' + files[subfield.name].name.substring(files[subfield.name].name.length - 4, files[subfield.name].name.length) : files[subfield.name].name}}</i>
+                            <i class="d-none d-lg-inline-block d-xl-none">{{files[subfield.name].name.length &gt; 36 ? files[subfield.name].name.substring(0, 36) + '...' + files[subfield.name].name.substring(files[subfield.name].name.length - 4, files[subfield.name].name.length) : files[subfield.name].name}}</i>
+                            <i class="d-none d-xl-inline-block">{{files[subfield.name].name.length &lt; 32 ? files[subfield.name].name.substring(0, 32) + '...' + files[subfield.name].name.substring(files[subfield.name].name.length - 4, files[subfield.name].name.length) : files[subfield.name].name}}</i>
+                            <i>
+                              ({{(files[subfield.name].size &lt; 1048576 ? files[subfield.name].size / 1024 : files[subfield.name].size / 1048576).toFixed(2)}} {{files[subfield.name].size &lt; 1048576 ? 'KB' : 'MB'}})
+                            </i>
+                          </span>
+                          <b-button
+                            variant="danger"
+                            class="ml-2"
+                            @click="resetFileInput(subfield.name)"
+                            size="sm"
+                            v-b-tooltip.hover
+                            title="Delete file"
+                          >
+                            <b-icon icon="x"></b-icon>
+                          </b-button>
+                        </div>
                       </template>
                       <template v-else-if="subfield.type === 'bigtext'">
                         <label class="d-block text-left text-secondary" :for="subfield.name" v-text="subfield.title"></label>
@@ -174,22 +204,47 @@
                   </template>
                   <template v-else-if="field.type === 'file'">
                     <label class="d-block text-left text-secondary" :for="field.name" v-text="field.title"></label>
-                    <b-form-file
-                      :id="`field-${field.name}`"
-                      placeholder="Choose a file or drop it here..."
-                      drop-placeholder="Drop file here..."
-                      @change="handleFiles(field.name)"
-                    >
-                      <template slot="file-name" >
-                        <div v-if="fileNames[field.name]">
-                          <span v-if="fileNames[field.name].length <= 24">{{fileNames[field.name]}}</span>
-                          <span v-else>{{`${fileNames[field.name].substring(0, 20)}...`}}</span>
-                        </div>
-                      </template>
+                    <b-input-group class="mt-2">
+                      <b-form-file
+                        :id="`field-${field.name}`"
+                        placeholder="Choose a file or drop it here..."
+                        drop-placeholder="Drop file here..."
+                        @change="handleFiles(field.name)"
+                        :disabled="!!files[field.name]"
+                        class="text-left"
+                      >
                     </b-form-file>
-                    <div v-if="fileNames[field.name]" class="d-flex justify-content-between align-items-center mt-2">
-                      <span class="file-name">{{fileNames[field.name]}}</span>
-                      <b-button variant="danger" class="ml-2" @click="resetFileInput(field.name)">
+                      <template v-slot:append>
+                        <b-button @click="uploadFile(field.name)" variant="secondary">Upload</b-button>
+                      </template>
+                    </b-input-group>
+                    <div v-if="files[field.name] && files[field.name].seen" class="d-flex justify-content-between align-items-center mt-2">
+                      <a
+                        v-if="fieldsModels[field.name].substring(0,9) == '/casedata'"
+                        target="_blank"
+                        :href="fieldsModels[field.name]"
+                      >
+                        Download file
+                      </a>
+                      <span v-else class="file-name text-secondary">
+                        <!-- v-b-tooltip.hover title="Tooltip content" -->
+                        <i v-b-tooltip.hover :title="files[field.name].name" class="d-sm-none">{{files[field.name].name.substring(0, 18) + '...' + files[field.name].name.substring(files[field.name].name.length - 4, files[field.name].name.length)}}</i>
+                        <i v-b-tooltip.hover :title="files[field.name].name" class="d-none d-sm-inline-block d-md-none">{{files[field.name].name.length &gt; 32 ? files[field.name].name.substring(0, 32) + '...' + files[field.name].name.substring(files[field.name].name.length - 4, files[field.name].name.length) : files[field.name].name}}</i>
+                        <i v-b-tooltip.hover :title="files[field.name].name" class="d-none d-md-inline-block d-lg-none">{{files[field.name].name.length &gt; 14 ? files[field.name].name.substring(0, 14) + '...' + files[field.name].name.substring(files[field.name].name.length - 4, files[field.name].name.length) : files[field.name].name}}</i>
+                        <i v-b-tooltip.hover :title="files[field.name].name" class="d-none d-lg-inline-block d-xl-none">{{files[field.name].name.length &gt; 36 ? files[field.name].name.substring(0, 36) + '...' + files[field.name].name.substring(files[field.name].name.length - 4, files[field.name].name.length) : files[field.name].name}}</i>
+                        <i v-b-tooltip.hover :title="files[field.name].name" class="d-none d-xl-inline-block">{{files[field.name].name.length &lt; 32 ? files[field.name].name.substring(0, 32) + '...' + files[field.name].name.substring(files[field.name].name.length - 4, files[field.name].name.length) : files[field.name].name}}</i>
+                        <i>
+                          ({{(files[field.name].size &lt; 1048576 ? files[field.name].size / 1024 : files[field.name].size / 1048576).toFixed(2)}} {{files[field.name].size &lt; 1048576 ? 'KB' : 'MB'}})
+                        </i>
+                      </span>
+                      <b-button
+                        variant="danger"
+                        class="ml-2"
+                        @click="resetFileInput(field.name)"
+                        size="sm"
+                        v-b-tooltip.hover
+                        title="Delete file"
+                      >
                         <b-icon icon="x"></b-icon>
                       </b-button>
                     </div>
@@ -230,7 +285,6 @@
                       v-model="fieldsModels[field.name]"
                     />
                   </template>
-                  {{fileNames}}
                 </div>
               </b-col>
             </b-row>
@@ -286,26 +340,26 @@ export default {
     errorMessage: '',
     progress: {},
     parsedData: {},
-    fileNames: {}
+    files: {}
   }),
   methods: {
     init () {
       // const url = (window.location != window.parent.location)
       //   ? document.referrer
       //   : document.location.href
-      const url = 'https://job-server.net/js/case_data/?sid=wconen&applicant_id=1313131'
+      const url = 'https://job-server.net/js/case_data/?sid=wconen&applicant_id=9612554'
       this.getParams(url)
       this.getFields(`/casedata?a=init&sid=wconen&applicant_id=${this.urlParams.applicant_id}`)
     },
     getParams (applicantUrl) {
-      var params = {};
-      var parser = document.createElement('a');
-      parser.href = applicantUrl;
-      var query = parser.search.substring(1);
-      var vars = query.split('&');
+      var params = {}
+      var parser = document.createElement('a')
+      parser.href = applicantUrl
+      var query = parser.search.substring(1)
+      var vars = query.split('&')
       for (var i = 0; i < vars.length; i++) {
-        var pair = vars[i].split('=');
-        params[pair[0]] = decodeURIComponent(pair[1]);
+        var pair = vars[i].split('=')
+        params[pair[0]] = decodeURIComponent(pair[1])
       }
       this.urlParams = params;
     },
@@ -344,7 +398,7 @@ export default {
             this.parsedData[this.fieldsConfig[item].name] = null
           }
         }
-        this.get(`/casedata?a=get&sid=wconen&applicant_id=${this.urlParams.applicant_id}`);
+        this.get(`/casedata?a=get&sid=wconen&applicant_id=${this.urlParams.applicant_id}`)
       });
     },
     get(url) {
@@ -372,14 +426,15 @@ export default {
               this.progress[section].max = Object.keys(this.parsedData[section]).length
             }
           }
-          this.loading = false;
+          this.$forceUpdate()
+          this.loading = false
         })
-        .catch(err => console.log(err));
+        .catch(err => console.log(err))
     },
     send() {
       this.sending = true
-      const bodyFormData = new FormData();
-      bodyFormData.set("data", JSON.stringify(this.fieldsModels));
+      const bodyFormData = new FormData()
+      bodyFormData.set("data", JSON.stringify(this.fieldsModels))
       this.$axios({
         url: `/casedata?a=save&sid=wconen&applicant_id=${this.urlParams.applicant_id}`,
         method: "POST",
@@ -406,28 +461,43 @@ export default {
     handleFiles(name) {
       this.loading = true;
       return new Promise(resolve => {
-        const element = document.querySelector(`#field-${name}`);
-        let file = element.files[0];
-        
+        const element = document.querySelector(`#field-${name}`)
+        let file = element.files[0]
         if (file) {
-          this.fileNames[name] = file.name
-          const fr = new FileReader();
+          this.files[name] = { name: file.name, size: file.size, seen: false }
+          const fr = new FileReader()
           fr.onload = function(event) {
-            resolve(event.target.result);
-          };
-          fr.readAsDataURL(file);
+            resolve(event.target.result)
+          }
+          fr.readAsDataURL(file)
         } else {
-          this.resetFileInput(file.name)
-          this.loading = false;
+          this.loading = false
         }
       }).then(res => {
-        this.fieldsModels[name] = res;
-        this.loading = false;
-      });
+        this.fieldsModels[name] = res
+        this.loading = false
+      })
     },
+    uploadFile(name) {
+      if (this.files[name]) this.files[name].seen = true
+      this.$forceUpdate()
+    },
+    // getFile(url) {
+    //   this.$axios({
+    //     url: url,
+    //     method: "GET",
+    //     headers: {
+    //       Authorization: "Basic " + window.btoa("test:pkotest9000"),
+    //       "Content-Type": "application/json"
+    //     },
+    //   }).then(res => {
+    //     const data = new Blob(res.data, {type : 'contentType'});
+    //     console.log(data)
+    //   })
+    // },
     resetFileInput(name) {
-      delete this.fileNames[name]
-      delete this.fieldsModels[name]
+      delete this.files[name]
+      this.fieldsModels[name] = null
       this.$forceUpdate()
     }
   },
@@ -469,5 +539,14 @@ export default {
 }
 .file-name {
   word-break: break-all;
+}
+.input-group-append .btn-secondary {
+  background-color: #e9ecef;
+  color: #495057;
+  border-color: #ced4da;
+}
+.custom-file label {
+  white-space: nowrap;
+  overflow: hidden;
 }
 </style>
