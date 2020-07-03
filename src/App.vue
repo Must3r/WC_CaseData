@@ -64,7 +64,7 @@
                 :key="field.name"
                 class="mb-3"
                 cols="12"
-                :sm="field.children ? '12' : field.name === 'title' || field.name === 'birth_date' ? '4' :
+                :md="field.children ? '12' : field.name === 'title' || field.name === 'birth_date' ? '4' :
                   field.name === 'fname' || field.name === 'birth_place' ? '8' :
                   field.name === 'address' ? '12' :
                   '6'"
@@ -106,7 +106,7 @@
                           :id="`field-${subfield.name}`"
                           placeholder="Choose a file or drop it here..."
                           drop-placeholder="Drop file here..."
-                          @change="handleFiles(`field-${subfield.name}`)"
+                          @change="handleFiles(subfield.name)"
                         ></b-form-file>
                       </template>
                       <template v-else-if="subfield.type === 'bigtext'">
@@ -178,9 +178,21 @@
                       :id="`field-${field.name}`"
                       placeholder="Choose a file or drop it here..."
                       drop-placeholder="Drop file here..."
-                      @change="handleFiles(`field-${field.name}`)"
-                    ></b-form-file>
-                    {{fieldsModels[field.name]}}
+                      @change="handleFiles(field.name)"
+                    >
+                      <template slot="file-name" >
+                        <div v-if="fileNames[field.name]">
+                          <span v-if="fileNames[field.name].length <= 24">{{fileNames[field.name]}}</span>
+                          <span v-else>{{`${fileNames[field.name].substring(0, 20)}...`}}</span>
+                        </div>
+                      </template>
+                    </b-form-file>
+                    <div v-if="fileNames[field.name]" class="d-flex justify-content-between align-items-center mt-2">
+                      <span class="file-name">{{fileNames[field.name]}}</span>
+                      <b-button variant="danger" class="ml-2" @click="resetFileInput(field.name)">
+                        <b-icon icon="x"></b-icon>
+                      </b-button>
+                    </div>
                   </template>
                   <template v-else-if="field.type === 'bigtext'">
                     <label class="d-block text-left text-secondary" :for="field.name" v-text="field.title"></label>
@@ -218,6 +230,7 @@
                       v-model="fieldsModels[field.name]"
                     />
                   </template>
+                  {{fileNames}}
                 </div>
               </b-col>
             </b-row>
@@ -272,7 +285,8 @@ export default {
     sendingError: false,
     errorMessage: '',
     progress: {},
-    parsedData: {}
+    parsedData: {},
+    fileNames: {}
   }),
   methods: {
     init () {
@@ -392,21 +406,29 @@ export default {
     handleFiles(name) {
       this.loading = true;
       return new Promise(resolve => {
-        const element = document.querySelector(`#${name}`);
+        const element = document.querySelector(`#field-${name}`);
         let file = element.files[0];
-        const fr = new FileReader();
-        fr.onload = function(event) {
-          resolve(event.target.result);
-        };
+        
         if (file) {
+          this.fileNames[name] = file.name
+          const fr = new FileReader();
+          fr.onload = function(event) {
+            resolve(event.target.result);
+          };
           fr.readAsDataURL(file);
         } else {
+          this.resetFileInput(file.name)
           this.loading = false;
         }
       }).then(res => {
         this.fieldsModels[name] = res;
         this.loading = false;
       });
+    },
+    resetFileInput(name) {
+      delete this.fileNames[name]
+      delete this.fieldsModels[name]
+      this.$forceUpdate()
     }
   },
   created() {
@@ -444,5 +466,8 @@ export default {
 }
 .bv-no-focus-ring {
   display: flex;
+}
+.file-name {
+  word-break: break-all;
 }
 </style>
