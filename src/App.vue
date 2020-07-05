@@ -113,16 +113,17 @@
                           >
                         </b-form-file>
                           <template v-slot:append>
-                            <b-button @click="uploadFile(subfield.name)" variant="secondary">Upload</b-button>
+                            <b-button @click="uploadFile(subfield.name, fieldsModels[subfield.name])" variant="secondary">Upload</b-button>
                           </template>
                         </b-input-group>
-                        <div v-if="files[subfield.name] && files[subfield.name].seen" class="d-flex justify-content-between align-items-center mt-2">
+                        <div v-if="files[subfield.name] && fieldsModels[subfield.name] && fieldsModels[subfield.name].substring(0,9) !== '/casedata'" class="d-flex justify-content-between align-items-center mt-2">
                           <span class="file-name text-secondary">
-                            <i class="d-sm-none">{{files[subfield.name].name.substring(0, 18) + '...' + files[subfield.name].name.substring(files[subfield.name].name.length - 4, files[subfield.name].name.length)}}</i>
-                            <i class="d-none d-sm-inline-block d-md-none">{{files[subfield.name].name.length &gt; 32 ? files[subfield.name].name.substring(0, 32) + '...' + files[subfield.name].name.substring(files[subfield.name].name.length - 4, files[subfield.name].name.length) : files[subfield.name].name}}</i>
-                            <i class="d-none d-md-inline-block d-lg-none">{{files[subfield.name].name.length &gt; 14 ? files[subfield.name].name.substring(0, 14) + '...' + files[subfield.name].name.substring(files[subfield.name].name.length - 4, files[subfield.name].name.length) : files[subfield.name].name}}</i>
-                            <i class="d-none d-lg-inline-block d-xl-none">{{files[subfield.name].name.length &gt; 36 ? files[subfield.name].name.substring(0, 36) + '...' + files[subfield.name].name.substring(files[subfield.name].name.length - 4, files[subfield.name].name.length) : files[subfield.name].name}}</i>
-                            <i class="d-none d-xl-inline-block">{{files[subfield.name].name.length &lt; 32 ? files[subfield.name].name.substring(0, 32) + '...' + files[subfield.name].name.substring(files[subfield.name].name.length - 4, files[subfield.name].name.length) : files[subfield.name].name}}</i>
+                            <!-- v-b-tooltip.hover title="Tooltip content" -->
+                            <i v-b-tooltip.hover :title="files[subfield.name].name" class="d-sm-none">{{files[subfield.name].name.substring(0, 18) + '...' + files[subfield.name].name.substring(files[subfield.name].name.length - 4, files[subfield.name].name.length)}}</i>
+                            <i v-b-tooltip.hover :title="files[subfield.name].name" class="d-none d-sm-inline-block d-md-none">{{files[subfield.name].name.length &gt; 24 ? files[subfield.name].name.substring(0, 32) + '...' + files[subfield.name].name.substring(files[subfield.name].name.length - 4, files[subfield.name].name.length) : files[subfield.name].name}}</i>
+                            <i v-b-tooltip.hover :title="files[subfield.name].name" class="d-none d-md-inline-block d-lg-none">{{files[subfield.name].name.length &gt; 14 ? files[subfield.name].name.substring(0, 14) + '...' + files[subfield.name].name.substring(files[subfield.name].name.length - 4, files[subfield.name].name.length) : files[subfield.name].name}}</i>
+                            <i v-b-tooltip.hover :title="files[subfield.name].name" class="d-none d-lg-inline-block d-xl-none">{{files[subfield.name].name.length &gt; 32 ? files[subfield.name].name.substring(0, 36) + '...' + files[subfield.name].name.substring(files[subfield.name].name.length - 4, files[subfield.name].name.length) : files[subfield.name].name}}</i>
+                            <i v-b-tooltip.hover :title="files[subfield.name].name" class="d-none d-xl-inline-block">{{files[subfield.name].name.length &lt; 28 ? files[subfield.name].name.substring(0, 32) + '...' + files[subfield.name].name.substring(files[subfield.name].name.length - 4, files[subfield.name].name.length) : files[subfield.name].name}}</i>
                             <i>
                               ({{(files[subfield.name].size &lt; 1048576 ? files[subfield.name].size / 1024 : files[subfield.name].size / 1048576).toFixed(2)}} {{files[subfield.name].size &lt; 1048576 ? 'KB' : 'MB'}})
                             </i>
@@ -130,7 +131,25 @@
                           <b-button
                             variant="danger"
                             class="ml-2"
-                            @click="resetFileInput(subfield.name)"
+                            @click="deleteFile(subfield.name, fieldsModels[subfield.name])"
+                            size="sm"
+                            v-b-tooltip.hover
+                            title="Delete file"
+                          >
+                            <b-icon icon="x"></b-icon>
+                          </b-button>
+                        </div>
+                        <div v-if="fieldsModels[subfield.name] && fieldsModels[subfield.name].substring(0,9) === '/casedata'" class="d-flex justify-content-between align-items-center mt-2">
+                          <a
+                            target="_blank"
+                            :href="fieldsModels[subfield.name]"
+                          >
+                            Download file
+                          </a>
+                          <b-button
+                            variant="danger"
+                            class="ml-2"
+                            @click="deleteFile(subfield.name)"
                             size="sm"
                             v-b-tooltip.hover
                             title="Delete file"
@@ -215,24 +234,17 @@
                       >
                     </b-form-file>
                       <template v-slot:append>
-                        <b-button @click="uploadFile(field.name)" variant="secondary">Upload</b-button>
+                        <b-button @click="uploadFile(field.name, fieldsModels[field.name])" variant="secondary">Upload</b-button>
                       </template>
                     </b-input-group>
-                    <div v-if="files[field.name] && files[field.name].seen" class="d-flex justify-content-between align-items-center mt-2">
-                      <a
-                        v-if="fieldsModels[field.name].substring(0,9) == '/casedata'"
-                        target="_blank"
-                        :href="fieldsModels[field.name]"
-                      >
-                        Download file
-                      </a>
-                      <span v-else class="file-name text-secondary">
+                    <div v-if="files[field.name] && fieldsModels[field.name] && fieldsModels[field.name].substring(0,9) !== '/casedata'" class="d-flex justify-content-between align-items-center mt-2">
+                      <span class="file-name text-secondary">
                         <!-- v-b-tooltip.hover title="Tooltip content" -->
                         <i v-b-tooltip.hover :title="files[field.name].name" class="d-sm-none">{{files[field.name].name.substring(0, 18) + '...' + files[field.name].name.substring(files[field.name].name.length - 4, files[field.name].name.length)}}</i>
-                        <i v-b-tooltip.hover :title="files[field.name].name" class="d-none d-sm-inline-block d-md-none">{{files[field.name].name.length &gt; 32 ? files[field.name].name.substring(0, 32) + '...' + files[field.name].name.substring(files[field.name].name.length - 4, files[field.name].name.length) : files[field.name].name}}</i>
+                        <i v-b-tooltip.hover :title="files[field.name].name" class="d-none d-sm-inline-block d-md-none">{{files[field.name].name.length &gt; 24 ? files[field.name].name.substring(0, 32) + '...' + files[field.name].name.substring(files[field.name].name.length - 4, files[field.name].name.length) : files[field.name].name}}</i>
                         <i v-b-tooltip.hover :title="files[field.name].name" class="d-none d-md-inline-block d-lg-none">{{files[field.name].name.length &gt; 14 ? files[field.name].name.substring(0, 14) + '...' + files[field.name].name.substring(files[field.name].name.length - 4, files[field.name].name.length) : files[field.name].name}}</i>
-                        <i v-b-tooltip.hover :title="files[field.name].name" class="d-none d-lg-inline-block d-xl-none">{{files[field.name].name.length &gt; 36 ? files[field.name].name.substring(0, 36) + '...' + files[field.name].name.substring(files[field.name].name.length - 4, files[field.name].name.length) : files[field.name].name}}</i>
-                        <i v-b-tooltip.hover :title="files[field.name].name" class="d-none d-xl-inline-block">{{files[field.name].name.length &lt; 32 ? files[field.name].name.substring(0, 32) + '...' + files[field.name].name.substring(files[field.name].name.length - 4, files[field.name].name.length) : files[field.name].name}}</i>
+                        <i v-b-tooltip.hover :title="files[field.name].name" class="d-none d-lg-inline-block d-xl-none">{{files[field.name].name.length &gt; 32 ? files[field.name].name.substring(0, 36) + '...' + files[field.name].name.substring(files[field.name].name.length - 4, files[field.name].name.length) : files[field.name].name}}</i>
+                        <i v-b-tooltip.hover :title="files[field.name].name" class="d-none d-xl-inline-block">{{files[field.name].name.length &lt; 28 ? files[field.name].name.substring(0, 32) + '...' + files[field.name].name.substring(files[field.name].name.length - 4, files[field.name].name.length) : files[field.name].name}}</i>
                         <i>
                           ({{(files[field.name].size &lt; 1048576 ? files[field.name].size / 1024 : files[field.name].size / 1048576).toFixed(2)}} {{files[field.name].size &lt; 1048576 ? 'KB' : 'MB'}})
                         </i>
@@ -240,7 +252,25 @@
                       <b-button
                         variant="danger"
                         class="ml-2"
-                        @click="resetFileInput(field.name)"
+                        @click="deleteFile(field.name, fieldsModels[field.name])"
+                        size="sm"
+                        v-b-tooltip.hover
+                        title="Delete file"
+                      >
+                        <b-icon icon="x"></b-icon>
+                      </b-button>
+                    </div>
+                    <div v-if="fieldsModels[field.name] && fieldsModels[field.name].substring(0,9) === '/casedata'" class="d-flex justify-content-between align-items-center mt-2">
+                      <a
+                        target="_blank"
+                        :href="fieldsModels[field.name]"
+                      >
+                        Download file
+                      </a>
+                      <b-button
+                        variant="danger"
+                        class="ml-2"
+                        @click="deleteFile(field.name)"
                         size="sm"
                         v-b-tooltip.hover
                         title="Delete file"
@@ -340,7 +370,8 @@ export default {
     errorMessage: '',
     progress: {},
     parsedData: {},
-    files: {}
+    files: {},
+    dataToSend: {}
   }),
   methods: {
     init () {
@@ -434,7 +465,12 @@ export default {
     send() {
       this.sending = true
       const bodyFormData = new FormData()
-      bodyFormData.set("data", JSON.stringify(this.fieldsModels))
+      for (let item in this.fieldsModels) {
+        if (this.fieldsModels[item] && this.fieldsModels[item].substring(0,9) !== '/casedata') {
+          this.dataToSend[item] = this.fieldsModels[item]
+        }
+      }
+      bodyFormData.set("data", JSON.stringify(this.dataToSend))
       this.$axios({
         url: `/casedata?a=save&sid=wconen&applicant_id=${this.urlParams.applicant_id}`,
         method: "POST",
@@ -461,7 +497,7 @@ export default {
     handleFiles(name) {
       this.loading = true;
       return new Promise(resolve => {
-        const element = document.querySelector(`#field-${name}`)
+        let element = document.querySelector(`#field-${name}`)
         let file = element.files[0]
         if (file) {
           this.files[name] = { name: file.name, size: file.size, seen: false }
@@ -473,31 +509,71 @@ export default {
         } else {
           this.loading = false
         }
+        element.value = ''
       }).then(res => {
         this.fieldsModels[name] = res
         this.loading = false
       })
     },
-    uploadFile(name) {
+    uploadFile(field, file) {
+      this.loading = true;
+      this.sending = true
+      const fileData = new FormData()
+      fileData.set("data", JSON.stringify({[field]: file}))
+      this.$axios({
+        url: `/casedata?a=save&sid=wconen&applicant_id=${this.urlParams.applicant_id}`,
+        method: "POST",
+        headers: {
+          Authorization: "Basic " + window.btoa("test:pkotest9000"),
+          "Content-Type": "multipart/form-data"
+        },
+        data: fileData
+      }).then(() => {
+        this.sending = false
+        this.sent = true
+        this.get(`/casedata?a=get&sid=wconen&applicant_id=${this.urlParams.applicant_id}`)
+        setTimeout(() => {
+          this.sent = false
+        }, 3000)
+      }).catch(err => {
+        this.sendingError = true
+        this.errorMessage = err
+        setTimeout(() => {
+          this.sendingError = false
+        }, 3000)
+      })
       if (this.files[name]) this.files[name].seen = true
       this.$forceUpdate()
     },
-    // getFile(url) {
-    //   this.$axios({
-    //     url: url,
-    //     method: "GET",
-    //     headers: {
-    //       Authorization: "Basic " + window.btoa("test:pkotest9000"),
-    //       "Content-Type": "application/json"
-    //     },
-    //   }).then(res => {
-    //     const data = new Blob(res.data, {type : 'contentType'});
-    //     console.log(data)
-    //   })
-    // },
-    resetFileInput(name) {
-      delete this.files[name]
-      this.fieldsModels[name] = null
+    deleteFile(field) {
+      this.loading = true;
+      this.sending = true
+      delete this.files[field]
+      this.fieldsModels[field] = null
+      const fileData = new FormData()
+      fileData.set("data", JSON.stringify({[field]: this.fieldsModels[field]}))
+      this.$axios({
+        url: `/casedata?a=save&sid=wconen&applicant_id=${this.urlParams.applicant_id}`,
+        method: "POST",
+        headers: {
+          Authorization: "Basic " + window.btoa("test:pkotest9000"),
+          "Content-Type": "application/json"
+        },
+        data: fileData
+      }).then(() => {
+        this.sending = false
+        this.sent = true
+        this.get(`/casedata?a=get&sid=wconen&applicant_id=${this.urlParams.applicant_id}`)
+        setTimeout(() => {
+          this.sent = false
+        }, 3000)
+      }).catch(err => {
+        this.sendingError = true
+        this.errorMessage = err
+        setTimeout(() => {
+          this.sendingError = false
+        }, 3000)
+      })
       this.$forceUpdate()
     }
   },
