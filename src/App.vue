@@ -102,54 +102,43 @@
                       </template>
                       <template v-else-if="subfield.type === 'file'">
                         <label class="d-block text-left text-secondary" :for="subfield.name" v-text="subfield.title"></label>
-                        <b-input-group class="mt-2">
-                          <b-form-file
-                            :id="`field-${subfield.name}`"
-                            placeholder="Choose a file or drop it here..."
-                            drop-placeholder="Drop file here..."
-                            @change="handleFiles(subfield.name)"
-                            :disabled="!!files[subfield.name]"
-                            class="text-left"
-                          >
+                        <b-form-file
+                          :id="`field-${subfield.name}`"
+                          placeholder="Choose a file or drop it here..."
+                          drop-placeholder="Drop file here..."
+                          @change="handleFiles(subfield.name)"
+                          :disabled="!!fieldsModels[subfield.name]"
+                          class="text-left"
+                        >
                         </b-form-file>
-                          <template v-slot:append>
-                            <b-button @click="uploadFile(subfield.name, fieldsModels[subfield.name])" variant="secondary">Upload</b-button>
-                          </template>
-                        </b-input-group>
-                        <div v-if="files[subfield.name] && fieldsModels[subfield.name]" class="d-flex justify-content-between align-items-center mt-2">
-                          <span class="file-name text-secondary">
-                            <!-- v-b-tooltip.hover title="Tooltip content" -->
-                            <i v-b-tooltip.hover :title="files[subfield.name].name" class="d-sm-none">{{files[subfield.name].name.substring(0, 18) + '...' + files[subfield.name].name.substring(files[subfield.name].name.length - 4, files[subfield.name].name.length)}}</i>
-                            <i v-b-tooltip.hover :title="files[subfield.name].name" class="d-none d-sm-inline-block d-md-none">{{files[subfield.name].name.length &gt; 24 ? files[subfield.name].name.substring(0, 32) + '...' + files[subfield.name].name.substring(files[subfield.name].name.length - 4, files[subfield.name].name.length) : files[subfield.name].name}}</i>
-                            <i v-b-tooltip.hover :title="files[subfield.name].name" class="d-none d-md-inline-block d-lg-none">{{files[subfield.name].name.length &gt; 14 ? files[subfield.name].name.substring(0, 14) + '...' + files[subfield.name].name.substring(files[subfield.name].name.length - 4, files[subfield.name].name.length) : files[subfield.name].name}}</i>
-                            <i v-b-tooltip.hover :title="files[subfield.name].name" class="d-none d-lg-inline-block d-xl-none">{{files[subfield.name].name.length &gt; 32 ? files[subfield.name].name.substring(0, 36) + '...' + files[subfield.name].name.substring(files[subfield.name].name.length - 4, files[subfield.name].name.length) : files[subfield.name].name}}</i>
-                            <i v-b-tooltip.hover :title="files[subfield.name].name" class="d-none d-xl-inline-block">{{files[subfield.name].name.length &lt; 28 ? files[subfield.name].name.substring(0, 32) + '...' + files[subfield.name].name.substring(files[subfield.name].name.length - 4, files[subfield.name].name.length) : files[subfield.name].name}}</i>
-                            <i>
-                              ({{(files[subfield.name].size &lt; 1048576 ? files[subfield.name].size / 1024 : files[subfield.name].size / 1048576).toFixed(2)}} {{files[subfield.name].size &lt; 1048576 ? 'KB' : 'MB'}})
-                            </i>
-                          </span>
-                          <b-button
+                        <div v-if="fieldsModels[subfield.name] && fieldsModels[subfield.name].name" class="d-flex justify-content-between align-items-center mt-2">
+                          <a
+                            target="_blank"
+                            :href="fieldsModels[subfield.name].href"
+                          >
+                            <i v-b-tooltip.hover :title="fieldsModels[subfield.name].name" class="d-sm-none">{{fieldsModels[subfield.name].name.substring(0, 18) + '...' + fieldsModels[subfield.name].name.substring(fieldsModels[subfield.name].name.length - 4, fieldsModels[subfield.name].name.length)}}</i>
+                            <i v-b-tooltip.hover :title="fieldsModels[subfield.name].name" class="d-none d-sm-inline-block d-md-none">{{fieldsModels[subfield.name].name.length &gt; 24 ? fieldsModels[subfield.name].name.substring(0, 24) + '...' + fieldsModels[subfield.name].name.substring(fieldsModels[subfield.name].name.length - 4, fieldsModels[subfield.name].name.length) : fieldsModels[subfield.name].name}}</i>
+                            <i v-b-tooltip.hover :title="fieldsModels[subfield.name].name" class="d-none d-md-inline-block d-lg-none">{{fieldsModels[subfield.name].name.length &gt; 14 ? fieldsModels[subfield.name].name.substring(0, 14) + '...' + fieldsModels[subfield.name].name.substring(fieldsModels[subfield.name].name.length - 4, fieldsModels[subfield.name].name.length) : fieldsModels[subfield.name].name}}</i>
+                            <i v-b-tooltip.hover :title="fieldsModels[subfield.name].name" class="d-none d-lg-inline-block d-xl-none">{{fieldsModels[subfield.name].name.length &gt; 32 ? fieldsModels[subfield.name].name.substring(0, 32) + '...' + fieldsModels[subfield.name].name.substring(fieldsModels[subfield.name].name.length - 4, fieldsModels[subfield.name].name.length) : fieldsModels[subfield.name].name}}</i>
+                            <i v-b-tooltip.hover :title="fieldsModels[subfield.name].name" class="d-none d-xl-inline-block">{{fieldsModels[subfield.name].name.length &lt; 28 ? fieldsModels[subfield.name].name.substring(0, 28) + '...' + fieldsModels[subfield.name].name.substring(fieldsModels[subfield.name].name.length - 4, fieldsModels[subfield.name].name.length) : fieldsModels[subfield.name].name}}</i>
+                            <!-- <i v-if="fieldsModels[subfield.name] && fieldsModels[subfield.name].size">
+                              ({{(fieldsModels[subfield.name].size &lt; 1048576 ? fieldsModels[subfield.name].size / 1024 : fieldsModels[subfield.name].size / 1048576).toFixed(2)}} {{fieldsModels[subfield.name].size &lt; 1048576 ? 'KB' : 'MB'}})
+                            </i> -->
+                          </a>
+                          <!-- <b-button
                             variant="danger"
                             class="ml-2"
-                            @click="deleteFile(subfield.name, fieldsModels[subfield.name])"
+                            @click="deleteFile(subfield.name)"
                             size="sm"
                             v-b-tooltip.hover
                             title="Delete file"
                           >
                             <b-icon icon="x"></b-icon>
-                          </b-button>
-                        </div>
-                        <div v-if="fieldsModels[subfield.name]" class="d-flex justify-content-between align-items-center mt-2">
-                          <a
-                            target="_blank"
-                            :href="fieldsModels[subfield.name].href"
-                          >
-                            {{fieldsModels[subfield.name].name}}
-                          </a>
+                          </b-button> -->
                           <b-button
                             variant="danger"
                             class="ml-2"
-                            @click="deleteFile(subfield.name)"
+                            @click="deleteModal(subfield.name)"
                             size="sm"
                             v-b-tooltip.hover
                             title="Delete file"
@@ -232,28 +221,6 @@
                       class="text-left"
                     >
                     </b-form-file>
-                    <!-- <div v-if="files[field.name] && fieldsModels[field.name] && fieldsModels[field.name].href" class="d-flex justify-content-between align-items-center mt-2">
-                      <span class="file-name text-secondary">
-                        <i v-b-tooltip.hover :title="files[field.name].name" class="d-sm-none">{{files[field.name].name.substring(0, 18) + '...' + files[field.name].name.substring(files[field.name].name.length - 4, files[field.name].name.length)}}</i>
-                        <i v-b-tooltip.hover :title="files[field.name].name" class="d-none d-sm-inline-block d-md-none">{{files[field.name].name.length &gt; 24 ? files[field.name].name.substring(0, 32) + '...' + files[field.name].name.substring(files[field.name].name.length - 4, files[field.name].name.length) : files[field.name].name}}</i>
-                        <i v-b-tooltip.hover :title="files[field.name].name" class="d-none d-md-inline-block d-lg-none">{{files[field.name].name.length &gt; 14 ? files[field.name].name.substring(0, 14) + '...' + files[field.name].name.substring(files[field.name].name.length - 4, files[field.name].name.length) : files[field.name].name}}</i>
-                        <i v-b-tooltip.hover :title="files[field.name].name" class="d-none d-lg-inline-block d-xl-none">{{files[field.name].name.length &gt; 32 ? files[field.name].name.substring(0, 36) + '...' + files[field.name].name.substring(files[field.name].name.length - 4, files[field.name].name.length) : files[field.name].name}}</i>
-                        <i v-b-tooltip.hover :title="files[field.name].name" class="d-none d-xl-inline-block">{{files[field.name].name.length &lt; 28 ? files[field.name].name.substring(0, 32) + '...' + files[field.name].name.substring(files[field.name].name.length - 4, files[field.name].name.length) : files[field.name].name}}</i>
-                        <i>
-                          ({{(files[field.name].size &lt; 1048576 ? files[field.name].size / 1024 : files[field.name].size / 1048576).toFixed(2)}} {{files[field.name].size &lt; 1048576 ? 'KB' : 'MB'}})
-                        </i>
-                      </span>
-                      <b-button
-                        variant="danger"
-                        class="ml-2"
-                        @click="deleteFile(field.name, fieldsModels[field.name])"
-                        size="sm"
-                        v-b-tooltip.hover
-                        title="Delete file"
-                      >
-                        <b-icon icon="x"></b-icon>
-                      </b-button>
-                    </div> -->
                     <div v-if="fieldsModels[field.name] && fieldsModels[field.name].name" class="d-flex justify-content-between align-items-center mt-2">
                       <a
                         target="_blank"
@@ -264,14 +231,24 @@
                         <i v-b-tooltip.hover :title="fieldsModels[field.name].name" class="d-none d-md-inline-block d-lg-none">{{fieldsModels[field.name].name.length &gt; 14 ? fieldsModels[field.name].name.substring(0, 14) + '...' + fieldsModels[field.name].name.substring(fieldsModels[field.name].name.length - 4, fieldsModels[field.name].name.length) : fieldsModels[field.name].name}}</i>
                         <i v-b-tooltip.hover :title="fieldsModels[field.name].name" class="d-none d-lg-inline-block d-xl-none">{{fieldsModels[field.name].name.length &gt; 32 ? fieldsModels[field.name].name.substring(0, 32) + '...' + fieldsModels[field.name].name.substring(fieldsModels[field.name].name.length - 4, fieldsModels[field.name].name.length) : fieldsModels[field.name].name}}</i>
                         <i v-b-tooltip.hover :title="fieldsModels[field.name].name" class="d-none d-xl-inline-block">{{fieldsModels[field.name].name.length &lt; 28 ? fieldsModels[field.name].name.substring(0, 28) + '...' + fieldsModels[field.name].name.substring(fieldsModels[field.name].name.length - 4, fieldsModels[field.name].name.length) : fieldsModels[field.name].name}}</i>
-                        <i>
-                          ({{(files[field.name].size &lt; 1048576 ? files[field.name].size / 1024 : files[field.name].size / 1048576).toFixed(2)}} {{files[field.name].size &lt; 1048576 ? 'KB' : 'MB'}})
-                        </i>
+                        <!-- <i v-if="fieldsModels[field.name] && fieldsModels[field.name].size">
+                          ({{(fieldsModels[field.name].size &lt; 1048576 ? fieldsModels[field.name].size / 1024 : fieldsModels[field.name].size / 1048576).toFixed(2)}} {{fieldsModels[field.name].size &lt; 1048576 ? 'KB' : 'MB'}})
+                        </i> -->
                       </a>
-                      <b-button
+                      <!-- <b-button
                         variant="danger"
                         class="ml-2"
                         @click="deleteFile(field.name)"
+                        size="sm"
+                        v-b-tooltip.hover
+                        title="Delete file"
+                      >
+                        <b-icon icon="x"></b-icon>
+                      </b-button> -->
+                      <b-button
+                        variant="danger"
+                        class="ml-2"
+                        @click="deleteModal(field.name)"
                         size="sm"
                         v-b-tooltip.hover
                         title="Delete file"
@@ -345,6 +322,17 @@
       </b-button>
       <p class="text-danger" v-text="errorMessage" />
     </b-form>
+    <b-modal v-model="isDeleteModal" centered>
+      <h4 class="text-center text-danger">Are you sure you want to delete the file?</h4>
+      <template v-slot:modal-footer>
+        <b-button variant="secondary" @click="isDeleteModal = !isDeleteModal">
+          Cancel
+        </b-button>
+        <b-button variant="danger" @click="[deleteFile(fileToDelete), isDeleteModal = !isDeleteModal]">
+          Yes
+        </b-button>
+      </template>
+    </b-modal>
     <div v-if="loading" class="loading">
       <b-spinner style="width: 4rem; height: 4rem; margin-top: 80px" variant="secondary"></b-spinner>
     </div>
@@ -372,7 +360,9 @@ export default {
     progress: {},
     parsedData: {},
     files: {},
-    dataToSend: {}
+    dataToSend: {},
+    isDeleteModal: false,
+    fileToDelete: ''
   }),
   methods: {
     init () {
@@ -467,7 +457,7 @@ export default {
       this.sending = true
       const bodyFormData = new FormData()
       for (let item in this.fieldsModels) {
-        if (this.fieldsModels[item] && this.fieldsModels[item].href) {
+        if (this.fieldsModels[item] && !this.fieldsModels[item].href) {
           this.dataToSend[item] = this.fieldsModels[item]
         }
       }
@@ -512,7 +502,8 @@ export default {
         }
         element.value = ''
       }).then(res => {
-        this.fieldsModels[name] = res
+        let content = res.split(',')
+        this.fieldsModels[name] = content[1]
         this.uploadFile(name, this.fieldsModels[name])
       })
     },
@@ -545,6 +536,10 @@ export default {
       })
       if (this.files[name]) this.files[name].seen = true
       this.$forceUpdate()
+    },
+    deleteModal(field) {
+      this.fileToDelete = field
+      this.isDeleteModal = true
     },
     deleteFile(field) {
       this.loading = true;
