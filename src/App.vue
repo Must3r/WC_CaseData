@@ -116,7 +116,7 @@
                             <b-button @click="uploadFile(subfield.name, fieldsModels[subfield.name])" variant="secondary">Upload</b-button>
                           </template>
                         </b-input-group>
-                        <div v-if="files[subfield.name] && fieldsModels[subfield.name] && fieldsModels[subfield.name].substring(0,9) !== '/casedata'" class="d-flex justify-content-between align-items-center mt-2">
+                        <div v-if="files[subfield.name] && fieldsModels[subfield.name]" class="d-flex justify-content-between align-items-center mt-2">
                           <span class="file-name text-secondary">
                             <!-- v-b-tooltip.hover title="Tooltip content" -->
                             <i v-b-tooltip.hover :title="files[subfield.name].name" class="d-sm-none">{{files[subfield.name].name.substring(0, 18) + '...' + files[subfield.name].name.substring(files[subfield.name].name.length - 4, files[subfield.name].name.length)}}</i>
@@ -139,12 +139,12 @@
                             <b-icon icon="x"></b-icon>
                           </b-button>
                         </div>
-                        <div v-if="fieldsModels[subfield.name] && fieldsModels[subfield.name].substring(0,9) === '/casedata'" class="d-flex justify-content-between align-items-center mt-2">
+                        <div v-if="fieldsModels[subfield.name]" class="d-flex justify-content-between align-items-center mt-2">
                           <a
                             target="_blank"
-                            :href="fieldsModels[subfield.name]"
+                            :href="fieldsModels[subfield.name].href"
                           >
-                            Download file
+                            {{fieldsModels[subfield.name].name}}
                           </a>
                           <b-button
                             variant="danger"
@@ -223,23 +223,17 @@
                   </template>
                   <template v-else-if="field.type === 'file'">
                     <label class="d-block text-left text-secondary" :for="field.name" v-text="field.title"></label>
-                    <b-input-group class="mt-2">
-                      <b-form-file
-                        :id="`field-${field.name}`"
-                        placeholder="Choose a file or drop it here..."
-                        drop-placeholder="Drop file here..."
-                        @change="handleFiles(field.name)"
-                        :disabled="!!files[field.name]"
-                        class="text-left"
-                      >
+                    <b-form-file
+                      :id="`field-${field.name}`"
+                      placeholder="Choose a file or drop it here..."
+                      drop-placeholder="Drop file here..."
+                      @change="handleFiles(field.name)"
+                      :disabled="!!fieldsModels[field.name]"
+                      class="text-left"
+                    >
                     </b-form-file>
-                      <template v-slot:append>
-                        <b-button @click="uploadFile(field.name, fieldsModels[field.name])" variant="secondary">Upload</b-button>
-                      </template>
-                    </b-input-group>
-                    <div v-if="files[field.name] && fieldsModels[field.name] && fieldsModels[field.name].substring(0,9) !== '/casedata'" class="d-flex justify-content-between align-items-center mt-2">
+                    <!-- <div v-if="files[field.name] && fieldsModels[field.name] && fieldsModels[field.name].href" class="d-flex justify-content-between align-items-center mt-2">
                       <span class="file-name text-secondary">
-                        <!-- v-b-tooltip.hover title="Tooltip content" -->
                         <i v-b-tooltip.hover :title="files[field.name].name" class="d-sm-none">{{files[field.name].name.substring(0, 18) + '...' + files[field.name].name.substring(files[field.name].name.length - 4, files[field.name].name.length)}}</i>
                         <i v-b-tooltip.hover :title="files[field.name].name" class="d-none d-sm-inline-block d-md-none">{{files[field.name].name.length &gt; 24 ? files[field.name].name.substring(0, 32) + '...' + files[field.name].name.substring(files[field.name].name.length - 4, files[field.name].name.length) : files[field.name].name}}</i>
                         <i v-b-tooltip.hover :title="files[field.name].name" class="d-none d-md-inline-block d-lg-none">{{files[field.name].name.length &gt; 14 ? files[field.name].name.substring(0, 14) + '...' + files[field.name].name.substring(files[field.name].name.length - 4, files[field.name].name.length) : files[field.name].name}}</i>
@@ -259,13 +253,20 @@
                       >
                         <b-icon icon="x"></b-icon>
                       </b-button>
-                    </div>
-                    <div v-if="fieldsModels[field.name] && fieldsModels[field.name].substring(0,9) === '/casedata'" class="d-flex justify-content-between align-items-center mt-2">
+                    </div> -->
+                    <div v-if="fieldsModels[field.name] && fieldsModels[field.name].name" class="d-flex justify-content-between align-items-center mt-2">
                       <a
                         target="_blank"
-                        :href="fieldsModels[field.name]"
+                        :href="fieldsModels[field.name].href"
                       >
-                        Download file
+                        <i v-b-tooltip.hover :title="fieldsModels[field.name].name" class="d-sm-none">{{fieldsModels[field.name].name.substring(0, 18) + '...' + fieldsModels[field.name].name.substring(fieldsModels[field.name].name.length - 4, fieldsModels[field.name].name.length)}}</i>
+                        <i v-b-tooltip.hover :title="fieldsModels[field.name].name" class="d-none d-sm-inline-block d-md-none">{{fieldsModels[field.name].name.length &gt; 24 ? fieldsModels[field.name].name.substring(0, 24) + '...' + fieldsModels[field.name].name.substring(fieldsModels[field.name].name.length - 4, fieldsModels[field.name].name.length) : fieldsModels[field.name].name}}</i>
+                        <i v-b-tooltip.hover :title="fieldsModels[field.name].name" class="d-none d-md-inline-block d-lg-none">{{fieldsModels[field.name].name.length &gt; 14 ? fieldsModels[field.name].name.substring(0, 14) + '...' + fieldsModels[field.name].name.substring(fieldsModels[field.name].name.length - 4, fieldsModels[field.name].name.length) : fieldsModels[field.name].name}}</i>
+                        <i v-b-tooltip.hover :title="fieldsModels[field.name].name" class="d-none d-lg-inline-block d-xl-none">{{fieldsModels[field.name].name.length &gt; 32 ? fieldsModels[field.name].name.substring(0, 32) + '...' + fieldsModels[field.name].name.substring(fieldsModels[field.name].name.length - 4, fieldsModels[field.name].name.length) : fieldsModels[field.name].name}}</i>
+                        <i v-b-tooltip.hover :title="fieldsModels[field.name].name" class="d-none d-xl-inline-block">{{fieldsModels[field.name].name.length &lt; 28 ? fieldsModels[field.name].name.substring(0, 28) + '...' + fieldsModels[field.name].name.substring(fieldsModels[field.name].name.length - 4, fieldsModels[field.name].name.length) : fieldsModels[field.name].name}}</i>
+                        <i>
+                          ({{(files[field.name].size &lt; 1048576 ? files[field.name].size / 1024 : files[field.name].size / 1048576).toFixed(2)}} {{files[field.name].size &lt; 1048576 ? 'KB' : 'MB'}})
+                        </i>
                       </a>
                       <b-button
                         variant="danger"
@@ -375,10 +376,10 @@ export default {
   }),
   methods: {
     init () {
-      // const url = (window.location != window.parent.location)
-      //   ? document.referrer
-      //   : document.location.href
-      const url = 'https://job-server.net/js/case_data/?sid=wconen&applicant_id=9612554'
+      const url = (window.location != window.parent.location)
+        ? document.referrer
+        : document.location.href
+      // const url = 'https://job-server.net/js/case_data/?sid=wconen&applicant_id=9612554'
       this.getParams(url)
       this.getFields(`/casedata?a=init&sid=wconen&applicant_id=${this.urlParams.applicant_id}`)
     },
@@ -466,7 +467,7 @@ export default {
       this.sending = true
       const bodyFormData = new FormData()
       for (let item in this.fieldsModels) {
-        if (this.fieldsModels[item] && this.fieldsModels[item].substring(0,9) !== '/casedata') {
+        if (this.fieldsModels[item] && this.fieldsModels[item].href) {
           this.dataToSend[item] = this.fieldsModels[item]
         }
       }
@@ -512,14 +513,14 @@ export default {
         element.value = ''
       }).then(res => {
         this.fieldsModels[name] = res
-        this.loading = false
+        this.uploadFile(name, this.fieldsModels[name])
       })
     },
     uploadFile(field, file) {
       this.loading = true;
       this.sending = true
       const fileData = new FormData()
-      fileData.set("data", JSON.stringify({[field]: file}))
+      fileData.set("data", JSON.stringify({[field]: { name: this.files[field].name, data: file }}))
       this.$axios({
         url: `/casedata?a=save&sid=wconen&applicant_id=${this.urlParams.applicant_id}`,
         method: "POST",
