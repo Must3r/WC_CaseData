@@ -106,7 +106,7 @@
                           :id="`field-${subfield.name}`"
                           placeholder="Choose a file or drop it here..."
                           drop-placeholder="Drop file here..."
-                          @change="handleFiles(subfield.name)"
+                          @change="handleFile(subfield.name)"
                           :disabled="!!fieldsModels[subfield.name]"
                           class="text-left"
                         >
@@ -216,7 +216,7 @@
                       :id="`field-${field.name}`"
                       placeholder="Choose a file or drop it here..."
                       drop-placeholder="Drop file here..."
-                      @change="handleFiles(field.name)"
+                      @change="handleFile(field.name)"
                       :disabled="!!fieldsModels[field.name]"
                       class="text-left"
                     >
@@ -248,13 +248,64 @@
                       <b-button
                         variant="danger"
                         class="ml-2"
-                        @click="deleteModal(field.name)"
+                        @click="deleteModal(field)"
                         size="sm"
                         v-b-tooltip.hover
                         title="Delete file"
                       >
                         <b-icon icon="x"></b-icon>
                       </b-button>
+                    </div>
+                  </template>
+                  <template v-else-if="field.type === 'file_multiple'">
+                    <label class="d-block text-left text-secondary" :for="field.name" v-text="field.title"></label>
+                    <b-form-file
+                      :id="`field-${field.name}`"
+                      placeholder="Choose a file or drop it here..."
+                      drop-placeholder="Drop file here..."
+                      @change="handleFiles(field.name)"
+                      class="text-left"
+                      multiple
+                    >
+                    </b-form-file>
+                    <div v-if="fieldsModels[field.name]">
+                      <p class="d-flex justify-content-between align-items-center mt-2" v-for="file in fieldsModels[field.name]" :key="file.href">
+                        <a
+                          v-if="file.name"
+                          target="_blank"
+                          :href="file.href"
+                        >
+                          <!-- {{file.name}} -->
+                          <i v-b-tooltip.hover :title="file.name" class="d-sm-none">{{file.name.substring(0, 18) + '...' + file.name.substring(file.name.length - 4, file.name.length)}}</i>
+                          <i v-b-tooltip.hover :title="file.name" class="d-none d-sm-inline-block d-md-none">{{file.name.length &gt; 24 ? file.name.substring(0, 24) + '...' + file.name.substring(file.name.length - 4, file.name.length) : file.name}}</i>
+                          <i v-b-tooltip.hover :title="file.name" class="d-none d-md-inline-block d-lg-none">{{file.name.length &gt; 14 ? file.name.substring(0, 14) + '...' + file.name.substring(file.name.length - 4, file.name.length) : file.name}}</i>
+                          <i v-b-tooltip.hover :title="file.name" class="d-none d-lg-inline-block d-xl-none">{{file.name.length &gt; 32 ? file.name.substring(0, 32) + '...' + file.name.substring(file.name.length - 4, file.name.length) : file.name}}</i>
+                          <i v-b-tooltip.hover :title="file.name" class="d-none d-xl-inline-block">{{file.name.length &lt; 28 ? file.name.substring(0, 28) + '...' + file.name.substring(file.name.length - 4, file.name.length) : file.name}}</i>
+                          <!-- <i v-if="fieldsModels[field.name] && fieldsModels[field.name].size">
+                            ({{(fieldsModels[field.name].size &lt; 1048576 ? fieldsModels[field.name].size / 1024 : fieldsModels[field.name].size / 1048576).toFixed(2)}} {{fieldsModels[field.name].size &lt; 1048576 ? 'KB' : 'MB'}})
+                          </i> -->
+                        </a>
+                        <!-- <b-button
+                          variant="danger"
+                          class="ml-2"
+                          @click="deleteFile(field.name)"
+                          size="sm"
+                          v-b-tooltip.hover
+                          title="Delete file"
+                        >
+                          <b-icon icon="x"></b-icon>
+                        </b-button> -->
+                        <b-button
+                          variant="danger"
+                          class="ml-2"
+                          @click="deleteModal(file.name)"
+                          size="sm"
+                          v-b-tooltip.hover
+                          title="Delete file"
+                        >
+                          <b-icon icon="x"></b-icon>
+                        </b-button>
+                      </p>
                     </div>
                   </template>
                   <template v-else-if="field.type === 'bigtext'">
@@ -333,6 +384,17 @@
         </b-button>
       </template>
     </b-modal>
+    <b-modal v-model="isUploadModal" centered>
+      <h4 class="text-center text-danger">Are you sure you want to upload these files?</h4>
+      <template v-slot:modal-footer>
+        <b-button variant="secondary" @click="[filesToUpload = [],isUploadModal = !isUploadModal]">
+          Cancel
+        </b-button>
+        <b-button variant="primary" @click="[uploadFiles(fieldToUpload, filesToUpload), isUploadModal = !isUploadModal]">
+          Yes
+        </b-button>
+      </template>
+    </b-modal>
     <div v-if="loading" class="loading">
       <b-spinner style="width: 4rem; height: 4rem; margin-top: 80px" variant="secondary"></b-spinner>
     </div>
@@ -348,7 +410,7 @@ export default {
     options: [
       { text: "Yes", value: true },
       { text: "No", value: false },
-      { text: "", value: null }
+      { text: "", value: '' }
     ],
     apiOptions: {},
     urlParams: {},
@@ -362,14 +424,17 @@ export default {
     files: {},
     dataToSend: {},
     isDeleteModal: false,
-    fileToDelete: ''
+    isUploadModal: false,
+    fileToDelete: '',
+    filesToUpload: [],
+    fieldToUpload: ''
   }),
   methods: {
     init () {
-      const url = (window.location != window.parent.location)
-        ? document.referrer
-        : document.location.href
-      // const url = 'https://job-server.net/js/case_data/?sid=wconen&applicant_id=9612554'
+      // const url = (window.location != window.parent.location)
+      //   ? document.referrer
+      //   : document.location.href
+      const url = 'https://job-server.net/js/case_data/?sid=wconen&applicant_id=25877'
       this.getParams(url)
       this.getFields(`/casedata?a=init&sid=wconen&applicant_id=${this.urlParams.applicant_id}`)
     },
@@ -457,7 +522,7 @@ export default {
       this.sending = true
       const bodyFormData = new FormData()
       for (let item in this.fieldsModels) {
-        if (this.fieldsModels[item] && !this.fieldsModels[item].href) {
+        if ((this.fieldsModels[item] || this.fieldsModels[item] === false || this.fieldsModels[item] === '') && !this.fieldsModels[item].href) {
           this.dataToSend[item] = this.fieldsModels[item]
         }
       }
@@ -485,7 +550,7 @@ export default {
         }, 3000)
       })
     },
-    handleFiles(name) {
+    handleFile(name) {
       this.loading = true;
       return new Promise(resolve => {
         let element = document.querySelector(`#field-${name}`)
@@ -504,8 +569,28 @@ export default {
       }).then(res => {
         let content = res.split(',')
         this.fieldsModels[name] = content[1]
-        this.uploadFile(name, this.fieldsModels[name])
       })
+    },
+    handleFiles(name) {
+      this.loading = true;
+      let element = document.querySelector(`#field-${name}`)
+      let files = element.files
+      if (files) {
+        files.forEach(el => {
+          this.files[name] = { name: el.name, size: el.size, seen: false }
+          return new Promise (resolve => {
+            const fr = new FileReader()
+            fr.onload = function(event) {
+              resolve(event.target.result)
+            }
+            fr.readAsDataURL(el)
+          }).then(res => {
+            const content = res.split(',')
+            this.filesToUpload.push({name: el.name, data: content[1]})
+          })
+        })
+      }
+      this.uploadModal(name)
     },
     uploadFile(field, file) {
       this.loading = true;
@@ -537,17 +622,53 @@ export default {
       if (this.files[name]) this.files[name].seen = true
       this.$forceUpdate()
     },
+    uploadFiles(field, files) {
+      this.loading = true;
+      this.sending = true
+      files.forEach(el => {
+        const fileData = new FormData()
+        fileData.set("data", JSON.stringify({[field]: { name: el.name, data: el.data }}))
+        this.$axios({
+          url: `/casedata?a=save&sid=wconen&applicant_id=${this.urlParams.applicant_id}`,
+          method: "POST",
+          headers: {
+            Authorization: "Basic " + window.btoa("test:pkotest9000"),
+            "Content-Type": "multipart/form-data"
+          },
+          data: fileData
+        }).then(() => {
+          this.sending = false
+          this.sent = true
+          this.get(`/casedata?a=get&sid=wconen&applicant_id=${this.urlParams.applicant_id}`)
+          setTimeout(() => {
+            this.sent = false
+          }, 2000)
+        }).catch(err => {
+          this.sendingError = true
+          this.errorMessage = err
+          setTimeout(() => {
+            this.sendingError = false
+          }, 2000)
+        })
+      })
+      this.$forceUpdate()
+    },
+    uploadModal(field) {
+      this.fieldToUpload = field
+      this.isUploadModal = true
+    },
     deleteModal(field) {
+      console.log(field)
       this.fileToDelete = field
       this.isDeleteModal = true
     },
     deleteFile(field) {
       this.loading = true;
       this.sending = true
-      delete this.files[field]
-      this.fieldsModels[field] = null
+      delete this.files[field.name]
+      this.fieldsModels[field.name] = null
       const fileData = new FormData()
-      fileData.set("data", JSON.stringify({[field]: this.fieldsModels[field]}))
+      fileData.set("data", JSON.stringify({[field.name]: this.fieldsModels[field.name]}))
       this.$axios({
         url: `/casedata?a=save&sid=wconen&applicant_id=${this.urlParams.applicant_id}`,
         method: "POST",
