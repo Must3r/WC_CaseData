@@ -147,6 +147,46 @@
                           </b-button>
                         </div>
                       </template>
+                      <template v-else-if="subfield.type === 'file_multiple'">
+                        <label class="d-block text-left text-secondary" :for="subfield.name" v-text="subfield.title"></label>
+                        <b-form-file
+                          :id="`field-${subfield.name}`"
+                          placeholder="Choose a file or drop it here..."
+                          drop-placeholder="Drop file here..."
+                          @change="handleFiles(subfield.name)"
+                          class="text-left"
+                          multiple
+                        >
+                        </b-form-file>
+                        <div v-if="fieldsModels[subfield.name]">
+                          <p class="d-flex justify-content-between align-items-center mt-2" v-for="file in fieldsModels[subfield.name]" :key="file.href">
+                            <a
+                              v-if="file.name"
+                              target="_blank"
+                              :href="file.href"
+                            >
+                              <i v-b-tooltip.hover :title="file.name" class="d-sm-none">{{file.name.substring(0, 18) + '...' + file.name.substring(file.name.length - 4, file.name.length)}}</i>
+                              <i v-b-tooltip.hover :title="file.name" class="d-none d-sm-inline-block d-md-none">{{file.name.length &gt; 24 ? file.name.substring(0, 24) + '...' + file.name.substring(file.name.length - 4, file.name.length) : file.name}}</i>
+                              <i v-b-tooltip.hover :title="file.name" class="d-none d-md-inline-block d-lg-none">{{file.name.length &gt; 14 ? file.name.substring(0, 14) + '...' + file.name.substring(file.name.length - 4, file.name.length) : file.name}}</i>
+                              <i v-b-tooltip.hover :title="file.name" class="d-none d-lg-inline-block d-xl-none">{{file.name.length &gt; 32 ? file.name.substring(0, 32) + '...' + file.name.substring(file.name.length - 4, file.name.length) : file.name}}</i>
+                              <i v-b-tooltip.hover :title="file.name" class="d-none d-xl-inline-block">{{file.name.length &lt; 28 ? file.name.substring(0, 28) + '...' + file.name.substring(file.name.length - 4, file.name.length) : file.name}}</i>
+                              <!-- <i v-if="fieldsModels[subfield.name] && fieldsModels[subfield.name].size">
+                                ({{(fieldsModels[subfield.name].size &lt; 1048576 ? fieldsModels[subfield.name].size / 1024 : fieldsModels[subfield.name].size / 1048576).toFixed(2)}} {{fieldsModels[field.name].size &lt; 1048576 ? 'KB' : 'MB'}})
+                              </i> -->
+                            </a>
+                            <b-button
+                              variant="danger"
+                              class="ml-2"
+                              @click="deleteModal(file)"
+                              size="sm"
+                              v-b-tooltip.hover
+                              title="Delete file"
+                            >
+                              <b-icon icon="x"></b-icon>
+                            </b-button>
+                          </p>
+                        </div>
+                      </template>
                       <template v-else-if="subfield.type === 'bigtext'">
                         <label class="d-block text-left text-secondary" :for="subfield.name" v-text="subfield.title"></label>
                         <b-form-textarea
@@ -235,16 +275,6 @@
                           ({{(fieldsModels[field.name].size &lt; 1048576 ? fieldsModels[field.name].size / 1024 : fieldsModels[field.name].size / 1048576).toFixed(2)}} {{fieldsModels[field.name].size &lt; 1048576 ? 'KB' : 'MB'}})
                         </i> -->
                       </a>
-                      <!-- <b-button
-                        variant="danger"
-                        class="ml-2"
-                        @click="deleteFile(field.name)"
-                        size="sm"
-                        v-b-tooltip.hover
-                        title="Delete file"
-                      >
-                        <b-icon icon="x"></b-icon>
-                      </b-button> -->
                       <b-button
                         variant="danger"
                         class="ml-2"
@@ -275,7 +305,6 @@
                           target="_blank"
                           :href="file.href"
                         >
-                          <!-- {{file.name}} -->
                           <i v-b-tooltip.hover :title="file.name" class="d-sm-none">{{file.name.substring(0, 18) + '...' + file.name.substring(file.name.length - 4, file.name.length)}}</i>
                           <i v-b-tooltip.hover :title="file.name" class="d-none d-sm-inline-block d-md-none">{{file.name.length &gt; 24 ? file.name.substring(0, 24) + '...' + file.name.substring(file.name.length - 4, file.name.length) : file.name}}</i>
                           <i v-b-tooltip.hover :title="file.name" class="d-none d-md-inline-block d-lg-none">{{file.name.length &gt; 14 ? file.name.substring(0, 14) + '...' + file.name.substring(file.name.length - 4, file.name.length) : file.name}}</i>
@@ -285,20 +314,10 @@
                             ({{(fieldsModels[field.name].size &lt; 1048576 ? fieldsModels[field.name].size / 1024 : fieldsModels[field.name].size / 1048576).toFixed(2)}} {{fieldsModels[field.name].size &lt; 1048576 ? 'KB' : 'MB'}})
                           </i> -->
                         </a>
-                        <!-- <b-button
-                          variant="danger"
-                          class="ml-2"
-                          @click="deleteFile(field.name)"
-                          size="sm"
-                          v-b-tooltip.hover
-                          title="Delete file"
-                        >
-                          <b-icon icon="x"></b-icon>
-                        </b-button> -->
                         <b-button
                           variant="danger"
                           class="ml-2"
-                          @click="deleteModal(file.name)"
+                          @click="deleteModal(file)"
                           size="sm"
                           v-b-tooltip.hover
                           title="Delete file"
@@ -379,13 +398,18 @@
         <b-button variant="secondary" @click="isDeleteModal = !isDeleteModal">
           Cancel
         </b-button>
-        <b-button variant="danger" @click="[deleteFile(fileToDelete), isDeleteModal = !isDeleteModal]">
+        <b-button variant="danger" @click="[fileToDelete.href ? deleteFiles(fileToDelete) : deleteFile(fileToDelete), isDeleteModal = !isDeleteModal]">
           Yes
         </b-button>
       </template>
     </b-modal>
     <b-modal v-model="isUploadModal" centered>
-      <h4 class="text-center text-danger">Are you sure you want to upload these files?</h4>
+      <h4 class="text-center text-danger">Files to upload</h4>
+      <ul>
+        <li v-for="file in filesToUpload" :key="file.name">
+          {{file.name}}
+        </li>
+      </ul>
       <template v-slot:modal-footer>
         <b-button variant="secondary" @click="[filesToUpload = [],isUploadModal = !isUploadModal]">
           Cancel
@@ -427,14 +451,15 @@ export default {
     isUploadModal: false,
     fileToDelete: '',
     filesToUpload: [],
-    fieldToUpload: ''
+    fieldToUpload: '',
+    fileToDeleteParams: {}
   }),
   methods: {
     init () {
-      // const url = (window.location != window.parent.location)
-      //   ? document.referrer
-      //   : document.location.href
-      const url = 'https://job-server.net/js/case_data/?sid=wconen&applicant_id=25877'
+      const url = (window.location != window.parent.location)
+        ? document.referrer
+        : document.location.href
+      // const url = 'https://job-server.net/js/case_data/?sid=wconen&applicant_id=25877'
       this.getParams(url)
       this.getFields(`/casedata?a=init&sid=wconen&applicant_id=${this.urlParams.applicant_id}`)
     },
@@ -569,6 +594,7 @@ export default {
       }).then(res => {
         let content = res.split(',')
         this.fieldsModels[name] = content[1]
+        this.uploadFile(name, this.fieldsModels[name])
       })
     },
     handleFiles(name) {
@@ -590,6 +616,7 @@ export default {
           })
         })
       }
+      element.value = ''
       this.uploadModal(name)
     },
     uploadFile(field, file) {
@@ -658,7 +685,6 @@ export default {
       this.isUploadModal = true
     },
     deleteModal(field) {
-      console.log(field)
       this.fileToDelete = field
       this.isDeleteModal = true
     },
@@ -677,6 +703,45 @@ export default {
           "Content-Type": "application/json"
         },
         data: fileData
+      }).then(() => {
+        this.sending = false
+        this.sent = true
+        this.get(`/casedata?a=get&sid=wconen&applicant_id=${this.urlParams.applicant_id}`)
+        setTimeout(() => {
+          this.sent = false
+        }, 3000)
+      }).catch(err => {
+        this.sendingError = true
+        this.errorMessage = err
+        setTimeout(() => {
+          this.sendingError = false
+        }, 3000)
+      })
+      this.$forceUpdate()
+    },
+    deleteFiles(field) {
+      // delete this.files[field.name]
+      // this.fieldsModels[field.name] = null
+      // const fileData = new FormData()
+      // fileData.set("data", JSON.stringify({[field.name]: this.fieldsModels[field.name]}))
+      var params = {}
+      var parser = document.createElement('a')
+      parser.href = field.href
+      var query = parser.search.substring(1)
+      var vars = query.split('&')
+      for (var i = 0; i < vars.length; i++) {
+        var pair = vars[i].split('=')
+        params[pair[0]] = decodeURIComponent(pair[1])
+      }
+      this.loading = true;
+      this.sending = true
+      this.$axios({
+        url: `/casedata?a=delete_file&sid=wconen&id=${params.id}`,
+        method: "POST",
+        headers: {
+          Authorization: "Basic " + window.btoa("test:pkotest9000"),
+          "Content-Type": "application/json"
+        }
       }).then(() => {
         this.sending = false
         this.sent = true
