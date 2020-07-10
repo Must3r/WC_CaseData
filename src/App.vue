@@ -301,7 +301,7 @@
                     <div v-if="fieldsModels[field.name]">
                       <p class="d-flex justify-content-between align-items-center mt-2" v-for="file in fieldsModels[field.name]" :key="file.href">
                         <a
-                          v-if="file.name"
+                          v-if="file"
                           target="_blank"
                           :href="file.href"
                         >
@@ -398,7 +398,7 @@
         <b-button variant="secondary" @click="isDeleteModal = !isDeleteModal">
           Cancel
         </b-button>
-        <b-button variant="danger" @click="[fileToDelete.href ? deleteFiles(fileToDelete) : deleteFile(fileToDelete), isDeleteModal = !isDeleteModal]">
+        <b-button variant="danger" @click="[fileToDelete.href ? deleteFiles(fileToDelete) : deleteFile(fileToDelete), fileToDelete={}, isDeleteModal = !isDeleteModal]">
           Yes
         </b-button>
       </template>
@@ -411,10 +411,10 @@
         </li>
       </ul>
       <template v-slot:modal-footer>
-        <b-button variant="secondary" @click="[filesToUpload = [],isUploadModal = !isUploadModal]">
+        <b-button variant="secondary" @click="[filesToUpload = [], loading = false, isUploadModal = !isUploadModal]">
           Cancel
         </b-button>
-        <b-button variant="primary" @click="[uploadFiles(fieldToUpload, filesToUpload), isUploadModal = !isUploadModal]">
+        <b-button variant="primary" @click="[uploadFiles(fieldToUpload, filesToUpload), filesToUpload = [], isUploadModal = !isUploadModal]">
           Yes
         </b-button>
       </template>
@@ -523,8 +523,12 @@ export default {
         }
       })
         .then(res => {
-          for (let source in res.data) {
-            this.fieldsModels[source] = res.data[source]
+          for (let source in this.fieldsModels) {
+            if (source in res.data) {
+              this.fieldsModels[source] = res.data[source]
+            } else {
+              this.fieldsModels[source] = null
+            }
             for (let section in this.parsedData) {
               let count = 0
               this.progress[section] = {}
@@ -678,7 +682,6 @@ export default {
           }, 2000)
         })
       })
-      this.$forceUpdate()
     },
     uploadModal(field) {
       this.fieldToUpload = field
@@ -717,13 +720,8 @@ export default {
           this.sendingError = false
         }, 3000)
       })
-      this.$forceUpdate()
     },
     deleteFiles(field) {
-      // delete this.files[field.name]
-      // this.fieldsModels[field.name] = null
-      // const fileData = new FormData()
-      // fileData.set("data", JSON.stringify({[field.name]: this.fieldsModels[field.name]}))
       var params = {}
       var parser = document.createElement('a')
       parser.href = field.href
