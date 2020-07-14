@@ -278,7 +278,7 @@
                       <b-button
                         variant="danger"
                         class="ml-2"
-                        @click="deleteModal(field)"
+                        @click="deleteModal(fieldsModels[field.name])"
                         size="sm"
                         v-b-tooltip.hover
                         title="Delete file"
@@ -362,6 +362,7 @@
                       :type="field.type"
                       v-model="fieldsModels[field.name]"
                     />
+                    {{fieldsModels[field.name]}}
                   </template>
                 </div>
               </b-col>
@@ -398,9 +399,10 @@
         <b-button variant="secondary" @click="isDeleteModal = !isDeleteModal">
           Cancel
         </b-button>
-        <b-button variant="danger" @click="[fileToDelete.href ? deleteFiles(fileToDelete) : deleteFile(fileToDelete), fileToDelete={}, isDeleteModal = !isDeleteModal]">
+        <b-button variant="danger" @click="[deleteFiles(fileToDelete), fileToDelete={}, isDeleteModal = !isDeleteModal]">
           Yes
         </b-button>
+        {{fileToDelete}}
       </template>
     </b-modal>
     <b-modal v-model="isUploadModal" centered>
@@ -456,10 +458,10 @@ export default {
   }),
   methods: {
     init () {
-      const url = (window.location != window.parent.location)
-        ? document.referrer
-        : document.location.href
-      // const url = 'https://job-server.net/js/case_data/?sid=wconen&applicant_id=25877'
+      // const url = (window.location != window.parent.location)
+      //   ? document.referrer
+      //   : document.location.href
+      const url = 'https://job-server.net/js/case_data/?sid=wconen&applicant_id=25877'
       this.getParams(url)
       this.getFields(`/casedata?a=init&sid=wconen&applicant_id=${this.urlParams.applicant_id}`)
     },
@@ -639,7 +641,24 @@ export default {
       }).then(() => {
         this.sending = false
         this.sent = true
-        this.get(`/casedata?a=get&sid=wconen&applicant_id=${this.urlParams.applicant_id}`)
+        
+        this.$axios({
+            url: `/casedata?a=get&sid=wconen&applicant_id=${this.urlParams.applicant_id}`,
+            method: "GET",
+            headers: {
+              Authorization: "Basic " + window.btoa("test:pkotest9000"),
+              "Content-Type": "application/json"
+            }
+          })
+            .then(res => {
+              for (let source in res.data) {
+                if (res.data[source] && res.data[source].href) {
+                  this.fieldsModels[source] = res.data[source]
+                }
+              }
+              this.loading = false
+            })
+            .catch(err => console.log(err))
         setTimeout(() => {
           this.sent = false
         }, 3000)
@@ -650,8 +669,6 @@ export default {
           this.sendingError = false
         }, 3000)
       })
-      if (this.files[name]) this.files[name].seen = true
-      this.$forceUpdate()
     },
     uploadFiles(field, files) {
       this.loading = true;
@@ -670,7 +687,24 @@ export default {
         }).then(() => {
           this.sending = false
           this.sent = true
-          this.get(`/casedata?a=get&sid=wconen&applicant_id=${this.urlParams.applicant_id}`)
+
+          this.$axios({
+            url: `/casedata?a=get&sid=wconen&applicant_id=${this.urlParams.applicant_id}`,
+            method: "GET",
+            headers: {
+              Authorization: "Basic " + window.btoa("test:pkotest9000"),
+              "Content-Type": "application/json"
+            }
+          })
+            .then(res => {
+              for (let source in this.fieldsModels) {
+                if (res.data[source] && Array.isArray(res.data[source])) {
+                  this.fieldsModels[source] = res.data[source]
+                }
+              }
+              this.loading = false
+            })
+            .catch(err => console.log(err))
           setTimeout(() => {
             this.sent = false
           }, 2000)
@@ -690,36 +724,6 @@ export default {
     deleteModal(field) {
       this.fileToDelete = field
       this.isDeleteModal = true
-    },
-    deleteFile(field) {
-      this.loading = true;
-      this.sending = true
-      delete this.files[field.name]
-      this.fieldsModels[field.name] = null
-      const fileData = new FormData()
-      fileData.set("data", JSON.stringify({[field.name]: this.fieldsModels[field.name]}))
-      this.$axios({
-        url: `/casedata?a=save&sid=wconen&applicant_id=${this.urlParams.applicant_id}`,
-        method: "POST",
-        headers: {
-          Authorization: "Basic " + window.btoa("test:pkotest9000"),
-          "Content-Type": "application/json"
-        },
-        data: fileData
-      }).then(() => {
-        this.sending = false
-        this.sent = true
-        this.get(`/casedata?a=get&sid=wconen&applicant_id=${this.urlParams.applicant_id}`)
-        setTimeout(() => {
-          this.sent = false
-        }, 3000)
-      }).catch(err => {
-        this.sendingError = true
-        this.errorMessage = err
-        setTimeout(() => {
-          this.sendingError = false
-        }, 3000)
-      })
     },
     deleteFiles(field) {
       var params = {}
@@ -743,7 +747,29 @@ export default {
       }).then(() => {
         this.sending = false
         this.sent = true
-        this.get(`/casedata?a=get&sid=wconen&applicant_id=${this.urlParams.applicant_id}`)
+
+        this.$axios({
+            url: `/casedata?a=get&sid=wconen&applicant_id=${this.urlParams.applicant_id}`,
+            method: "GET",
+            headers: {
+              Authorization: "Basic " + window.btoa("test:pkotest9000"),
+              "Content-Type": "application/json"
+            }
+          })
+            .then(res => {
+              for (let source in res.data) {
+                this.fieldsModels[source] = res.data[source]
+                for (let item in this.fieldsModels) {
+                  // this.$forceUpdate()
+                  if (Array.isArray(this.fieldsModels[item]) && !res.data[item]) {
+                    this.fieldsModels[item] = null
+                  }
+                }
+              }
+              console.log(this.fieldsModels)
+              this.loading = false
+            })
+            .catch(err => console.log(err))
         setTimeout(() => {
           this.sent = false
         }, 3000)
@@ -754,7 +780,6 @@ export default {
           this.sendingError = false
         }, 3000)
       })
-      this.$forceUpdate()
     }
   },
   created() {
