@@ -138,7 +138,7 @@
                           <b-button
                             variant="danger"
                             class="ml-2"
-                            @click="deleteModal(subfield.name)"
+                            @click="deleteModal(fieldsModels[subfield.name])"
                             size="sm"
                             v-b-tooltip.hover
                             title="Delete file"
@@ -362,7 +362,6 @@
                       :type="field.type"
                       v-model="fieldsModels[field.name]"
                     />
-                    {{fieldsModels[field.name]}}
                   </template>
                 </div>
               </b-col>
@@ -402,7 +401,6 @@
         <b-button variant="danger" @click="[deleteFiles(fileToDelete), fileToDelete={}, isDeleteModal = !isDeleteModal]">
           Yes
         </b-button>
-        {{fileToDelete}}
       </template>
     </b-modal>
     <b-modal v-model="isUploadModal" centered>
@@ -458,10 +456,10 @@ export default {
   }),
   methods: {
     init () {
-      // const url = (window.location != window.parent.location)
-      //   ? document.referrer
-      //   : document.location.href
-      const url = 'https://job-server.net/js/case_data/?sid=wconen&applicant_id=25877'
+      const url = (window.location != window.parent.location)
+        ? document.referrer
+        : document.location.href
+      // const url = 'https://job-server.net/js/case_data/?sid=wconen&applicant_id=25877'
       this.getParams(url)
       this.getFields(`/casedata?a=init&sid=wconen&applicant_id=${this.urlParams.applicant_id}`)
     },
@@ -760,13 +758,11 @@ export default {
               for (let source in res.data) {
                 this.fieldsModels[source] = res.data[source]
                 for (let item in this.fieldsModels) {
-                  // this.$forceUpdate()
                   if (Array.isArray(this.fieldsModels[item]) && !res.data[item]) {
                     this.fieldsModels[item] = null
                   }
                 }
               }
-              console.log(this.fieldsModels)
               this.loading = false
             })
             .catch(err => console.log(err))
