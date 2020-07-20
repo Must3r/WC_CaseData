@@ -456,10 +456,10 @@ export default {
   }),
   methods: {
     init () {
-      const url = (window.location != window.parent.location)
-        ? document.referrer
-        : document.location.href
-      // const url = 'https://job-server.net/js/case_data/?sid=wconen&applicant_id=25877'
+      // const url = (window.location != window.parent.location)
+      //   ? document.referrer
+      //   : document.location.href
+      const url = 'https://job-server.net/js/case_data/?sid=wconen&applicant_id=25877'
       this.getParams(url)
       this.getFields(`/casedata?a=init&sid=wconen&applicant_id=${this.urlParams.applicant_id}`)
     },
@@ -548,6 +548,7 @@ export default {
         .catch(err => console.log(err))
     },
     send() {
+      this.loading = true
       this.sending = true
       const bodyFormData = new FormData()
       for (let item in this.fieldsModels) {
@@ -570,13 +571,15 @@ export default {
         this.get(`/casedata?a=get&sid=wconen&applicant_id=${this.urlParams.applicant_id}`)
         setTimeout(() => {
           this.sent = false
-        }, 3000)
+          this.loading = false
+        }, 2000)
       }).catch(err => {
         this.sendingError = true
         this.errorMessage = err
         setTimeout(() => {
           this.sendingError = false
-        }, 3000)
+          this.loading = false
+        }, 2000)
       })
     },
     handleFile(name) {
@@ -641,22 +644,22 @@ export default {
         this.sent = true
         
         this.$axios({
-            url: `/casedata?a=get&sid=wconen&applicant_id=${this.urlParams.applicant_id}`,
-            method: "GET",
-            headers: {
-              Authorization: "Basic " + window.btoa("test:pkotest9000"),
-              "Content-Type": "application/json"
-            }
-          })
-            .then(res => {
-              for (let source in res.data) {
-                if (res.data[source] && res.data[source].href) {
-                  this.fieldsModels[source] = res.data[source]
-                }
+          url: `/casedata?a=get&sid=wconen&applicant_id=${this.urlParams.applicant_id}`,
+          method: "GET",
+          headers: {
+            Authorization: "Basic " + window.btoa("test:pkotest9000"),
+            "Content-Type": "application/json"
+          }
+        })
+          .then(res => {
+            for (let source in res.data) {
+              if (res.data[source] && res.data[source].href) {
+                this.fieldsModels[source] = res.data[source]
               }
-              this.loading = false
-            })
-            .catch(err => console.log(err))
+            }
+            this.loading = false
+          })
+          .catch(err => console.log(err))
         setTimeout(() => {
           this.sent = false
         }, 3000)
@@ -756,9 +759,13 @@ export default {
           })
             .then(res => {
               for (let source in res.data) {
-                this.fieldsModels[source] = res.data[source]
+                if (!this.fieldsModels[source] && res.data[source]) {
+                  this.fieldsModels[source] = res.data[source]
+                }
                 for (let item in this.fieldsModels) {
                   if (Array.isArray(this.fieldsModels[item]) && !res.data[item]) {
+                    this.fieldsModels[item] = null
+                  } else if (this.fieldsModels[item] && this.fieldsModels[item].href && !res.data[item]) {
                     this.fieldsModels[item] = null
                   }
                 }
